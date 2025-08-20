@@ -56,7 +56,7 @@ const Index = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Improved Mobility Accessibility</span>
-                <span className="text-sm font-medium">98% coverage</span>
+                <span className="text-sm font-medium">3,478 households</span>
               </div>
             </div>
           </CardContent>
