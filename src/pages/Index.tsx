@@ -30,17 +30,12 @@ const Index = () => {
                 <CardDescription>Mobility initiatives budget</CardDescription>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-semibold text-foreground">35.90M €</p>
-                <p className="text-sm text-muted-foreground">Waiting to be deployed</p>
+                <p className="text-2xl font-semibold text-foreground">8.58M €</p>
+                <p className="text-sm text-muted-foreground">Currently allocated</p>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-4">
-              <p className="text-3xl font-bold text-foreground">8.58M €</p>
-              <p className="text-sm text-muted-foreground">Currently allocated</p>
-            </div>
-            
             <div className="space-y-1 mb-3">
               <h4 className="text-sm font-medium text-foreground">Services Supported</h4>
             </div>
