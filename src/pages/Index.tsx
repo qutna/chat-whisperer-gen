@@ -11,7 +11,34 @@ const Index = () => {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Investment Summary</CardTitle>
+            <CardDescription>Financial overview and deployment</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Investment to Date</span>
+                <span className="text-sm font-medium">8.58M €</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Impact Achieved</span>
+                <span className="text-sm font-medium">49.7M €</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Social Return on Investment</span>
+                <span className="text-sm font-medium">5.8x</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Funds Waiting to be Deployed</span>
+                <span className="text-sm font-medium">2.42M €</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Active Operators</CardTitle>
