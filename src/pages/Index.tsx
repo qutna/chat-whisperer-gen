@@ -40,23 +40,38 @@ const Index = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Reduced Congestion</span>
-                <span className="text-sm font-medium">115M citizen hours</span>
+                <div className="text-right">
+                  <div className="text-sm font-medium">10.4M €</div>
+                  <div className="text-xs text-muted-foreground">115M citizen hours</div>
+                </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Availed Public Space</span>
-                <span className="text-sm font-medium">348 sqm/month</span>
+                <div className="text-right">
+                  <div className="text-sm font-medium">10.9M €</div>
+                  <div className="text-xs text-muted-foreground">348 sqm/month</div>
+                </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Improved Public Health</span>
-                <span className="text-sm font-medium">1.1M active hours</span>
+                <div className="text-right">
+                  <div className="text-sm font-medium">13.5M €</div>
+                  <div className="text-xs text-muted-foreground">1.1M active hours</div>
+                </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Reduced GHG emissions</span>
-                <span className="text-sm font-medium">2.4 tons CO₂</span>
+                <div className="text-right">
+                  <div className="text-sm font-medium">8.2M €</div>
+                  <div className="text-xs text-muted-foreground">2.4 tons CO₂</div>
+                </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Improved Mobility Accessibility</span>
-                <span className="text-sm font-medium">3,478 households</span>
+                <div className="text-right">
+                  <div className="text-sm font-medium">6.7M €</div>
+                  <div className="text-xs text-muted-foreground">3,478 households</div>
+                </div>
               </div>
             </div>
           </CardContent>
