@@ -26,7 +26,7 @@ const Index = () => {
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle>Total Spend</CardTitle>
+                <CardTitle>Total Investment</CardTitle>
                 <CardDescription>Mobility initiatives budget</CardDescription>
               </div>
               <div className="text-right">
