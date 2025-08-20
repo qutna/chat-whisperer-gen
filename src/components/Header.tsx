@@ -32,14 +32,12 @@ export function Header() {
       <div className="flex items-center gap-4">
         <SidebarTrigger className="h-8 w-8" />
         <div className="flex items-center gap-3">
-          <img 
-            src="/placeholder.svg" 
-            alt="Mobility Impact Market Logo" 
-            className="h-8 w-8"
-          />
+          <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-sm">M</span>
+          </div>
           <div>
             <h1 className="text-lg font-semibold text-foreground">
-              Impact Market
+              Mobility Impact Market
             </h1>
             <p className="text-sm text-muted-foreground">
               {mockUser.authority}
