@@ -33,7 +33,7 @@ const Index = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Funds Waiting to be Deployed</span>
-                <span className="text-sm font-medium">2.42M €</span>
+                <span className="text-sm font-medium">25.91M €</span>
               </div>
             </div>
           </CardContent>
