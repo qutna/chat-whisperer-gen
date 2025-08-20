@@ -15,18 +15,19 @@ export function Layout({ children }: LayoutProps) {
           <ResizablePanel 
             defaultSize={20} 
             minSize={15} 
-            maxSize={40}
-            className="min-w-[200px]"
+            maxSize={35}
           >
-            <AppSidebar />
+            <div className="h-full">
+              <AppSidebar />
+            </div>
           </ResizablePanel>
           
-          <ResizableHandle withHandle />
+          <ResizableHandle withHandle className="w-2 bg-border hover:bg-border/80 transition-colors" />
           
-          <ResizablePanel defaultSize={80} minSize={60}>
+          <ResizablePanel defaultSize={80} minSize={65}>
             <div className="flex flex-col h-full">
               <Header />
-              <main className="flex-1 p-6 bg-background">
+              <main className="flex-1 p-6 bg-background overflow-auto">
                 {children}
               </main>
             </div>
