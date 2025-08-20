@@ -33,11 +33,32 @@ const Index = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>CO₂ Saved</CardTitle>
-            <CardDescription>Environmental impact</CardDescription>
+            <CardTitle>Impact Summary</CardTitle>
+            <CardDescription>Social and environmental outcomes</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-foreground">2.4 tons</p>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Reduced Congestion</span>
+                <span className="text-sm font-medium">115M citizen hours</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Availed Public Space</span>
+                <span className="text-sm font-medium">348 sqm/month</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Improved Public Health</span>
+                <span className="text-sm font-medium">1.1M active hours</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Reduced GHG emissions</span>
+                <span className="text-sm font-medium">2.4 tons CO₂</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Improved Mobility Accessibility</span>
+                <span className="text-sm font-medium">98% coverage</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
