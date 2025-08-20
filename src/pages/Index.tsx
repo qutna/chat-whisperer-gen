@@ -34,14 +34,18 @@ const Index = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Impact Summary</CardTitle>
-            <CardDescription>Social and environmental outcomes</CardDescription>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle>Impact Summary</CardTitle>
+                <CardDescription>Social and environmental outcomes</CardDescription>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-semibold text-foreground">49.7M €</p>
+                <p className="text-sm text-muted-foreground">Total Economic Impact</p>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-4">
-              <p className="text-3xl font-bold text-foreground">49.7M €</p>
-              <p className="text-sm text-muted-foreground">Total Economic Impact</p>
-            </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
