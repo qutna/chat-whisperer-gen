@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Car, Trees, Heart, Leaf, Users } from "lucide-react";
 
 const Index = () => {
   return (
@@ -39,35 +40,50 @@ const Index = () => {
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Reduced Congestion</span>
+                <div className="flex items-center gap-2">
+                  <Car className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Reduced Congestion</span>
+                </div>
                 <div className="text-right">
                   <div className="text-sm font-medium">10.4M €</div>
                   <div className="text-xs text-muted-foreground">115M citizen hours</div>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Availed Public Space</span>
+                <div className="flex items-center gap-2">
+                  <Trees className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Availed Public Space</span>
+                </div>
                 <div className="text-right">
                   <div className="text-sm font-medium">10.9M €</div>
                   <div className="text-xs text-muted-foreground">348 sqm/month</div>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Improved Public Health</span>
+                <div className="flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Improved Public Health</span>
+                </div>
                 <div className="text-right">
                   <div className="text-sm font-medium">13.5M €</div>
                   <div className="text-xs text-muted-foreground">1.1M active hours</div>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Reduced GHG emissions</span>
+                <div className="flex items-center gap-2">
+                  <Leaf className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Reduced GHG emissions</span>
+                </div>
                 <div className="text-right">
                   <div className="text-sm font-medium">8.2M €</div>
                   <div className="text-xs text-muted-foreground">2.4 tons CO₂</div>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Improved Mobility Accessibility</span>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Improved Mobility Accessibility</span>
+                </div>
                 <div className="text-right">
                   <div className="text-sm font-medium">6.7M €</div>
                   <div className="text-xs text-muted-foreground">3,478 households</div>
