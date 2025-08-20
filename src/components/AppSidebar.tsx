@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/sidebar";
 
 const items = [
-  { title: "Operators", url: "/operators", icon: Building2 },
   { title: "Trips", url: "/trips", icon: Route },
   { title: "Impacts", url: "/impacts", icon: TrendingUp },
+  { title: "Operators", url: "/operators", icon: Building2 },
   { title: "Account", url: "/account", icon: User },
 ];
 
