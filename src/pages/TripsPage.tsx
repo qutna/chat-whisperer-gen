@@ -13,6 +13,7 @@ interface Incentive {
   endLocation: string;
   startTime: string;
   endTime: string;
+  amount: number;
 }
 
 interface Quarter {
@@ -39,7 +40,8 @@ const defaultIncentives: Incentive[] = [
     startLocation: "Any",
     endLocation: "Any",
     startTime: "Any",
-    endTime: "Any"
+    endTime: "Any",
+    amount: 1.0
   },
   {
     id: 2,
@@ -48,7 +50,8 @@ const defaultIncentives: Incentive[] = [
     startLocation: "<100m of daycare institutions",
     endLocation: "<100m of daycare institutions",
     startTime: "Any",
-    endTime: "Any"
+    endTime: "Any",
+    amount: 2.5
   },
   {
     id: 3,
@@ -57,7 +60,8 @@ const defaultIncentives: Incentive[] = [
     startLocation: "Suburb areas",
     endLocation: "Any",
     startTime: "07:00-09:00 Mon-Fri",
-    endTime: "Any"
+    endTime: "Any",
+    amount: 2.0
   },
   {
     id: 4,
@@ -66,16 +70,18 @@ const defaultIncentives: Incentive[] = [
     startLocation: "Any",
     endLocation: "<100m of public transport hubs in suburbs",
     startTime: "07:00-09:00 Mon-Fri",
-    endTime: "Any"
+    endTime: "Any",
+    amount: 1.0
   },
   {
     id: 5,
     mode: "ebike",
     businessModel: "self-owned",
-    startLocation: "Any",
-    endLocation: "Any",
+    startLocation: "Suburb areas",
+    endLocation: "Suburb areas",
     startTime: "Any",
-    endTime: "Any"
+    endTime: "Any",
+    amount: 0.5
   }
 ];
 
@@ -172,6 +178,7 @@ export default function TripsPage() {
                 <TableHead>End Location</TableHead>
                 <TableHead>Start Time</TableHead>
                 <TableHead>End Time</TableHead>
+                <TableHead>Incentive Amount (EUR)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -183,6 +190,7 @@ export default function TripsPage() {
                   <TableCell>{incentive.endLocation}</TableCell>
                   <TableCell>{incentive.startTime}</TableCell>
                   <TableCell>{incentive.endTime}</TableCell>
+                  <TableCell>€{incentive.amount.toFixed(2)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
