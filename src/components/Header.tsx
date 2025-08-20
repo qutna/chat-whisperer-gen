@@ -1,4 +1,5 @@
 import { ChevronDown, LogOut, Settings } from "lucide-react";
+import { Link } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -31,7 +32,7 @@ export function Header() {
     <header className="h-16 border-b border-border bg-background flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
         <SidebarTrigger className="h-8 w-8" />
-        <div className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">M</span>
           </div>
@@ -43,7 +44,7 @@ export function Header() {
               {mockUser.authority}
             </p>
           </div>
-        </div>
+        </Link>
       </div>
 
       <DropdownMenu>
