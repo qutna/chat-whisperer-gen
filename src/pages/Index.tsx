@@ -252,34 +252,30 @@ const Index = () => {
                         alt="Donkey Republic" 
                         className="w-8 h-8 object-contain"
                         onError={(e) => {
-                          const target = e.currentTarget;
-                          target.style.display = 'none';
-                          const fallback = document.createElement('span');
-                          fallback.className = 'text-white font-bold text-xs';
-                          fallback.textContent = 'DR';
-                          target.parentElement?.appendChild(fallback);
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement.innerHTML = '<span class="text-white font-bold text-xs">DR</span>';
                         }}
                       />
                     </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity duration-200 pointer-events-none">
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
                       <h4 className="font-semibold text-sm mb-1">Donkey Republic</h4>
                       <p className="text-xs text-muted-foreground">Flexible, affordable bike sharing with 24/7 availability in 60+ cities. Urban mobility solution where every ride counts.</p>
                     </div>
                   </div>
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-orange-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
                       <span className="text-white font-bold text-xs">DOTT</span>
                     </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity duration-200 pointer-events-none">
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
                       <h4 className="font-semibold text-sm mb-1">Dott</h4>
                       <p className="text-xs text-muted-foreground">European champion of micromobility. Affordable, convenient and safe rides making green travel an easy choice for people in Europe.</p>
                     </div>
                   </div>
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-green-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
                       <span className="text-white font-bold text-xs">LIME</span>
                     </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity duration-200 pointer-events-none">
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
                       <h4 className="font-semibold text-sm mb-1">Lime</h4>
                       <p className="text-xs text-muted-foreground">World's largest shared electric vehicle company. Building a future where transportation is shared, affordable and carbon-free.</p>
                     </div>
@@ -295,10 +291,10 @@ const Index = () => {
                 </div>
                 <div className="flex gap-3">
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
                       <span className="text-white font-bold text-xs">NAB</span>
                     </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity duration-200 pointer-events-none">
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
                       <h4 className="font-semibold text-sm mb-1">Nabogo</h4>
                       <p className="text-xs text-muted-foreground">Community-based carpooling platform making city-like public mobility affordable for society, companies, and citizens.</p>
                     </div>
@@ -310,25 +306,21 @@ const Index = () => {
                         alt="BlaBlaCar" 
                         className="w-8 h-8 object-contain"
                         onError={(e) => {
-                          const target = e.currentTarget;
-                          target.style.display = 'none';
-                          const fallback = document.createElement('span');
-                          fallback.className = 'text-white font-bold text-xs';
-                          fallback.textContent = 'BBC';
-                          target.parentElement?.appendChild(fallback);
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement.innerHTML = '<span class="text-white font-bold text-xs">BBC</span>';
                         }}
                       />
                     </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity duration-200 pointer-events-none">
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
                       <h4 className="font-semibold text-sm mb-1">BlaBlaCar</h4>
                       <p className="text-xs text-muted-foreground">World's leading community-based travel app enabling 27 million active members to share rides and travel costs across 21 countries.</p>
                     </div>
                   </div>
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-green-600 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
                       <span className="text-white font-bold text-xs">GOG</span>
                     </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity duration-200 pointer-events-none">
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
                       <h4 className="font-semibold text-sm mb-1">GoGORIDE</h4>
                       <p className="text-xs text-muted-foreground">European carpooling platform connecting drivers and passengers for sustainable, affordable long-distance travel.</p>
                     </div>
@@ -344,19 +336,19 @@ const Index = () => {
                 </div>
                 <div className="flex gap-3">
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-orange-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
                       <span className="text-white font-bold text-xs">VOI</span>
                     </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity duration-200 pointer-events-none">
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
                       <h4 className="font-semibold text-sm mb-1">Voi</h4>
                       <p className="text-xs text-muted-foreground">The easier way to get around town. Rent electric scooters and bikes with a simple tap on your phone, putting people at the centre of urban planning.</p>
                     </div>
                   </div>
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-orange-600 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
                       <span className="text-white font-bold text-xs">DOTT</span>
                     </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity duration-200 pointer-events-none">
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
                       <h4 className="font-semibold text-sm mb-1">Dott</h4>
                       <p className="text-xs text-muted-foreground">Believe in a future where cities are pollution-free and designed for people, not cars. European champion of micromobility.</p>
                     </div>
