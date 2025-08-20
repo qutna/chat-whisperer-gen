@@ -38,6 +38,10 @@ const Index = () => {
             <CardDescription>Social and environmental outcomes</CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="mb-4">
+              <p className="text-3xl font-bold text-foreground">49.7M €</p>
+              <p className="text-sm text-muted-foreground">Total Economic Impact</p>
+            </div>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
