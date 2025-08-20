@@ -246,39 +246,38 @@ const Index = () => {
                 </div>
                 <div className="flex gap-3">
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-red-600 transition-colors">
-                      CB
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/en/5/57/Donkey_Republic_Logo.png" 
+                        alt="Donkey Republic" 
+                        className="w-8 h-8 object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement.innerHTML = '<span class="text-white font-bold text-xs">DR</span>';
+                        }}
+                      />
                     </div>
                     <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
-                      <h4 className="font-semibold text-sm mb-1">CityBike</h4>
-                      <p className="text-xs text-muted-foreground">Public bike sharing system with smart docking stations throughout the city.</p>
+                      <h4 className="font-semibold text-sm mb-1">Donkey Republic</h4>
+                      <p className="text-xs text-muted-foreground">Flexible, affordable bike sharing with 24/7 availability in 60+ cities. Urban mobility solution where every ride counts.</p>
                     </div>
                   </div>
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-purple-700 transition-colors">
-                      VB
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-orange-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                      <span className="text-white font-bold text-xs">DOTT</span>
                     </div>
                     <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
-                      <h4 className="font-semibold text-sm mb-1">VeloBike</h4>
-                      <p className="text-xs text-muted-foreground">Premium electric bike sharing with GPS tracking and mobile app integration.</p>
+                      <h4 className="font-semibold text-sm mb-1">Dott</h4>
+                      <p className="text-xs text-muted-foreground">European champion of micromobility. Affordable, convenient and safe rides making green travel an easy choice for people in Europe.</p>
                     </div>
                   </div>
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-teal-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-teal-700 transition-colors">
-                      BS
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-green-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                      <span className="text-white font-bold text-xs">LIME</span>
                     </div>
                     <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
-                      <h4 className="font-semibold text-sm mb-1">BikeShare Metro</h4>
-                      <p className="text-xs text-muted-foreground">Integrated public transport bike sharing connecting metro stations and key destinations.</p>
-                    </div>
-                  </div>
-                  <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-yellow-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-yellow-700 transition-colors">
-                      ES
-                    </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
-                      <h4 className="font-semibold text-sm mb-1">EcoSpin</h4>
-                      <p className="text-xs text-muted-foreground">Sustainable bike sharing focused on reducing carbon footprint with solar-powered stations.</p>
+                      <h4 className="font-semibold text-sm mb-1">Lime</h4>
+                      <p className="text-xs text-muted-foreground">World's largest shared electric vehicle company. Building a future where transportation is shared, affordable and carbon-free.</p>
                     </div>
                   </div>
                 </div>
@@ -292,30 +291,38 @@ const Index = () => {
                 </div>
                 <div className="flex gap-3">
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-indigo-700 transition-colors">
-                      CP
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                      <span className="text-white font-bold text-xs">NAB</span>
                     </div>
                     <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
-                      <h4 className="font-semibold text-sm mb-1">CarpoolConnect</h4>
-                      <p className="text-xs text-muted-foreground">AI-powered carpooling platform matching commuters for shared rides and reduced traffic.</p>
+                      <h4 className="font-semibold text-sm mb-1">Nabogo</h4>
+                      <p className="text-xs text-muted-foreground">Community-based carpooling platform making city-like public mobility affordable for society, companies, and citizens.</p>
                     </div>
                   </div>
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-pink-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-pink-700 transition-colors">
-                      RS
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-blue-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                      <img 
+                        src="https://cdn.blablacar.com/language-selector/assets/images/blablacarSmall-b0b6fe4089b6c3e0.svg" 
+                        alt="BlaBlaCar" 
+                        className="w-8 h-8 object-contain"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement.innerHTML = '<span class="text-white font-bold text-xs">BBC</span>';
+                        }}
+                      />
                     </div>
                     <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
-                      <h4 className="font-semibold text-sm mb-1">RideShare Plus</h4>
-                      <p className="text-xs text-muted-foreground">Corporate carpooling solution with real-time matching and sustainability tracking.</p>
+                      <h4 className="font-semibold text-sm mb-1">BlaBlaCar</h4>
+                      <p className="text-xs text-muted-foreground">World's leading community-based travel app enabling 27 million active members to share rides and travel costs across 21 countries.</p>
                     </div>
                   </div>
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-cyan-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-cyan-700 transition-colors">
-                      SM
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-green-600 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                      <span className="text-white font-bold text-xs">GOG</span>
                     </div>
                     <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
-                      <h4 className="font-semibold text-sm mb-1">ShareMobility</h4>
-                      <p className="text-xs text-muted-foreground">Community-driven carpooling network with social features and environmental impact tracking.</p>
+                      <h4 className="font-semibold text-sm mb-1">GoGORIDE</h4>
+                      <p className="text-xs text-muted-foreground">European carpooling platform connecting drivers and passengers for sustainable, affordable long-distance travel.</p>
                     </div>
                   </div>
                 </div>
@@ -329,30 +336,21 @@ const Index = () => {
                 </div>
                 <div className="flex gap-3">
                   <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-lime-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-lime-700 transition-colors">
-                      LM
-                    </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
-                      <h4 className="font-semibold text-sm mb-1">Lime</h4>
-                      <p className="text-xs text-muted-foreground">Global leader in shared electric vehicles with dockless scooters and bikes.</p>
-                    </div>
-                  </div>
-                  <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-gray-800 transition-colors">
-                      BR
-                    </div>
-                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
-                      <h4 className="font-semibold text-sm mb-1">Bird</h4>
-                      <p className="text-xs text-muted-foreground">Electric scooter sharing with focus on sustainable urban transportation solutions.</p>
-                    </div>
-                  </div>
-                  <div className="group relative">
-                    <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-orange-700 transition-colors">
-                      VR
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-orange-500 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                      <span className="text-white font-bold text-xs">VOI</span>
                     </div>
                     <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
                       <h4 className="font-semibold text-sm mb-1">Voi</h4>
-                      <p className="text-xs text-muted-foreground">European e-scooter operator focused on sustainable micromobility and city partnerships.</p>
+                      <p className="text-xs text-muted-foreground">The easier way to get around town. Rent electric scooters and bikes with a simple tap on your phone, putting people at the centre of urban planning.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-orange-600 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md">
+                      <span className="text-white font-bold text-xs">DOTT</span>
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">Dott</h4>
+                      <p className="text-xs text-muted-foreground">Believe in a future where cities are pollution-free and designed for people, not cars. European champion of micromobility.</p>
                     </div>
                   </div>
                 </div>
