@@ -32,7 +32,7 @@ export function AppSidebar() {
       : "hover:bg-sidebar-accent/50";
 
   return (
-    <Sidebar className="h-full">
+    <Sidebar className="border-r border-sidebar-border">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/70">
