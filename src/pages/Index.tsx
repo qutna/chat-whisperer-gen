@@ -11,7 +11,7 @@ const Index = () => {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Investment Summary</CardTitle>
@@ -39,15 +39,6 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Active Operators</CardTitle>
-            <CardDescription>Mobility service providers in your city</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-foreground">12</p>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardHeader>
@@ -72,7 +63,7 @@ const Index = () => {
                 <div>Initiative</div>
                 <div className="text-center">Nr of Trips</div>
                 <div className="text-center">Avg Trip Support</div>
-                <div className="text-right">Total Spend</div>
+                <div className="text-right">Total Investment</div>
               </div>
               
               <div className="grid grid-cols-4 gap-2 items-center">
@@ -196,6 +187,212 @@ const Index = () => {
                 </div>
                 <div className="text-center text-sm">3,478 households</div>
                 <div className="text-right text-sm font-medium">6.7M €</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-1">
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Operators</CardTitle>
+            <CardDescription>Mobility service providers in your city</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Cargo Bike Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Truck className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Cargo Bike</span>
+                </div>
+                <div className="flex gap-3">
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-orange-600 transition-colors">
+                      UE
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">Urban eBikes</h4>
+                      <p className="text-xs text-muted-foreground">Leading cargo bike sharing service for last-mile delivery and family transport solutions.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-green-700 transition-colors">
+                      CB
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">CargoBike Solutions</h4>
+                      <p className="text-xs text-muted-foreground">Sustainable cargo transportation for businesses and municipalities across European cities.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-blue-700 transition-colors">
+                      FC
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">FleetCargo</h4>
+                      <p className="text-xs text-muted-foreground">Electric cargo bike fleet management and sharing platform for urban logistics.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bike Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Bike className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Bike</span>
+                </div>
+                <div className="flex gap-3">
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-red-600 transition-colors">
+                      CB
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">CityBike</h4>
+                      <p className="text-xs text-muted-foreground">Public bike sharing system with smart docking stations throughout the city.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-purple-700 transition-colors">
+                      VB
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">VeloBike</h4>
+                      <p className="text-xs text-muted-foreground">Premium electric bike sharing with GPS tracking and mobile app integration.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-teal-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-teal-700 transition-colors">
+                      BS
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">BikeShare Metro</h4>
+                      <p className="text-xs text-muted-foreground">Integrated public transport bike sharing connecting metro stations and key destinations.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-yellow-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-yellow-700 transition-colors">
+                      ES
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">EcoSpin</h4>
+                      <p className="text-xs text-muted-foreground">Sustainable bike sharing focused on reducing carbon footprint with solar-powered stations.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Carpool Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Carpool</span>
+                </div>
+                <div className="flex gap-3">
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-indigo-700 transition-colors">
+                      CP
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">CarpoolConnect</h4>
+                      <p className="text-xs text-muted-foreground">AI-powered carpooling platform matching commuters for shared rides and reduced traffic.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-pink-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-pink-700 transition-colors">
+                      RS
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">RideShare Plus</h4>
+                      <p className="text-xs text-muted-foreground">Corporate carpooling solution with real-time matching and sustainability tracking.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-cyan-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-cyan-700 transition-colors">
+                      SM
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">ShareMobility</h4>
+                      <p className="text-xs text-muted-foreground">Community-driven carpooling network with social features and environmental impact tracking.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* eScooters Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">eScooters</span>
+                </div>
+                <div className="flex gap-3">
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-lime-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-lime-700 transition-colors">
+                      LM
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">Lime</h4>
+                      <p className="text-xs text-muted-foreground">Global leader in shared electric vehicles with dockless scooters and bikes.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-gray-800 transition-colors">
+                      BR
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">Bird</h4>
+                      <p className="text-xs text-muted-foreground">Electric scooter sharing with focus on sustainable urban transportation solutions.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-orange-700 transition-colors">
+                      VR
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">Voi</h4>
+                      <p className="text-xs text-muted-foreground">European e-scooter operator focused on sustainable micromobility and city partnerships.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* AVs Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Bot className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">AVs (Autonomous Vehicles)</span>
+                </div>
+                <div className="flex gap-3">
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-blue-900 transition-colors">
+                      WM
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">Waymo</h4>
+                      <p className="text-xs text-muted-foreground">Pioneer in autonomous vehicle technology with self-driving car fleet services.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-red-800 transition-colors">
+                      CR
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">Cruise</h4>
+                      <p className="text-xs text-muted-foreground">Autonomous vehicle service providing driverless rides in urban environments.</p>
+                    </div>
+                  </div>
+                  <div className="group relative">
+                    <div className="w-10 h-10 rounded-full bg-purple-800 flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:bg-purple-900 transition-colors">
+                      AS
+                    </div>
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover border rounded-lg p-3 shadow-lg z-10 w-64 transition-opacity">
+                      <h4 className="font-semibold text-sm mb-1">AutoShuttle</h4>
+                      <p className="text-xs text-muted-foreground">Autonomous shuttle service for first and last mile connectivity in urban areas.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
