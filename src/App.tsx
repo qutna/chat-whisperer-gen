@@ -7,6 +7,7 @@ import { Layout } from "./components/Layout";
 import Index from "./pages/Index";
 import OperatorsPage from "./pages/OperatorsPage";
 import TripsPage from "./pages/TripsPage";
+import IncentivesPage from "./pages/IncentivesPage";
 import ImpactsPage from "./pages/ImpactsPage";
 import AccountPage from "./pages/AccountPage";
 import NotFound from "./pages/NotFound";
@@ -22,8 +23,9 @@ const App = () => (
         <Layout>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/operators" element={<OperatorsPage />} />
+            <Route path="/incentives" element={<IncentivesPage />} />
             <Route path="/trips" element={<TripsPage />} />
+            <Route path="/operators" element={<OperatorsPage />} />
             <Route path="/impacts" element={<ImpactsPage />} />
             <Route path="/account" element={<AccountPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

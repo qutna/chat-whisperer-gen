@@ -1,4 +1,4 @@
-import { Building2, Route, TrendingUp, User } from "lucide-react";
+import { Building2, Route, TrendingUp, User, DollarSign } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const items = [
+  { title: "Incentives", url: "/incentives", icon: DollarSign },
   { title: "Trips", url: "/trips", icon: Route },
   { title: "Impacts", url: "/impacts", icon: TrendingUp },
   { title: "Operators", url: "/operators", icon: Building2 },
