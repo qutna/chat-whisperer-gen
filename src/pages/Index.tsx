@@ -140,7 +140,7 @@ const Index = () => {
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground font-medium">
                 <div>Initiative</div>
-                <div className="text-center">Impact Metric</div>
+                <div className="text-left">Impact Metric</div>
                 <div className="text-right">Economic Value</div>
               </div>
               
@@ -149,7 +149,7 @@ const Index = () => {
                   <Car className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Reduced Congestion</span>
                 </div>
-                <div className="text-center text-sm">115M citizen hours</div>
+                <div className="text-left text-sm">115M citizen hours</div>
                 <div className="text-right text-sm font-medium">10.4M €</div>
               </div>
               
@@ -158,7 +158,7 @@ const Index = () => {
                   <Trees className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Availed Public Space</span>
                 </div>
-                <div className="text-center text-sm">348 sqm/month</div>
+                <div className="text-left text-sm">348 sqm/month</div>
                 <div className="text-right text-sm font-medium">10.9M €</div>
               </div>
               
@@ -167,7 +167,7 @@ const Index = () => {
                   <Heart className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Improved Public Health</span>
                 </div>
-                <div className="text-center text-sm">1.1M active hours</div>
+                <div className="text-left text-sm">1.1M active hours</div>
                 <div className="text-right text-sm font-medium">13.5M €</div>
               </div>
               
@@ -176,7 +176,7 @@ const Index = () => {
                   <Leaf className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Reduced GHG emissions</span>
                 </div>
-                <div className="text-center text-sm">2.4 tons CO₂</div>
+                <div className="text-left text-sm">2.4 tons CO₂</div>
                 <div className="text-right text-sm font-medium">8.2M €</div>
               </div>
               
@@ -185,7 +185,7 @@ const Index = () => {
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Improved Mobility Accessibility</span>
                 </div>
-                <div className="text-center text-sm">3,478 households</div>
+                <div className="text-left text-sm">3,478 households</div>
                 <div className="text-right text-sm font-medium">6.7M €</div>
               </div>
             </div>
