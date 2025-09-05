@@ -61,7 +61,7 @@ const Index = () => {
             <div className="space-y-3">
               <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground font-medium">
                 <div>Initiative</div>
-                <div className="text-center">Nr of Trips</div>
+                <div className="text-left">Nr of Trips</div>
                 <div className="text-left">Avg Trip Support</div>
                 <div className="text-left">Total Investment</div>
               </div>
@@ -71,7 +71,7 @@ const Index = () => {
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Cargo Bike</span>
                 </div>
-                <div className="text-center text-sm">454k</div>
+                <div className="text-left text-sm">454k</div>
                 <div className="text-left text-sm">1.56 €</div>
                 <div className="text-left text-sm font-medium">0.71M €</div>
               </div>
@@ -81,7 +81,7 @@ const Index = () => {
                   <Bike className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Bike</span>
                 </div>
-                <div className="text-center text-sm">5756k</div>
+                <div className="text-left text-sm">5756k</div>
                 <div className="text-left text-sm">0.81 €</div>
                 <div className="text-left text-sm font-medium">4.66M €</div>
               </div>
@@ -91,7 +91,7 @@ const Index = () => {
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Carpool</span>
                 </div>
-                <div className="text-center text-sm">1578k</div>
+                <div className="text-left text-sm">1578k</div>
                 <div className="text-left text-sm">2.03 €</div>
                 <div className="text-left text-sm font-medium">3.21M €</div>
               </div>
@@ -101,7 +101,7 @@ const Index = () => {
                   <Zap className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">eScooters</span>
                 </div>
-                <div className="text-center text-sm">2338</div>
+                <div className="text-left text-sm">2338</div>
                 <div className="text-left text-sm">0.45 €</div>
                 <div className="text-left text-sm font-medium">1.05k €</div>
               </div>
@@ -111,7 +111,7 @@ const Index = () => {
                   <Bot className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">AVs</span>
                 </div>
-                <div className="text-center text-sm">2264</div>
+                <div className="text-left text-sm">2264</div>
                 <div className="text-left text-sm">1.22 €</div>
                 <div className="text-left text-sm font-medium">2.76k €</div>
               </div>
@@ -141,7 +141,7 @@ const Index = () => {
               <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground font-medium">
                 <div>Initiative</div>
                 <div className="text-left">Impact Metric</div>
-                <div className="text-right">Economic Value</div>
+                <div className="text-left">Economic Value</div>
               </div>
               
               <div className="grid grid-cols-3 gap-2 items-center">
@@ -150,7 +150,7 @@ const Index = () => {
                   <span className="text-sm">Reduced Congestion</span>
                 </div>
                 <div className="text-left text-sm">115M citizen hours</div>
-                <div className="text-right text-sm font-medium">10.4M €</div>
+                <div className="text-left text-sm font-medium">10.4M €</div>
               </div>
               
               <div className="grid grid-cols-3 gap-2 items-center">
@@ -159,7 +159,7 @@ const Index = () => {
                   <span className="text-sm">Availed Public Space</span>
                 </div>
                 <div className="text-left text-sm">348 sqm/month</div>
-                <div className="text-right text-sm font-medium">10.9M €</div>
+                <div className="text-left text-sm font-medium">10.9M €</div>
               </div>
               
               <div className="grid grid-cols-3 gap-2 items-center">
@@ -168,7 +168,7 @@ const Index = () => {
                   <span className="text-sm">Improved Public Health</span>
                 </div>
                 <div className="text-left text-sm">1.1M active hours</div>
-                <div className="text-right text-sm font-medium">13.5M €</div>
+                <div className="text-left text-sm font-medium">13.5M €</div>
               </div>
               
               <div className="grid grid-cols-3 gap-2 items-center">
@@ -177,7 +177,7 @@ const Index = () => {
                   <span className="text-sm">Reduced GHG emissions</span>
                 </div>
                 <div className="text-left text-sm">2.4 tons CO₂</div>
-                <div className="text-right text-sm font-medium">8.2M €</div>
+                <div className="text-left text-sm font-medium">8.2M €</div>
               </div>
               
               <div className="grid grid-cols-3 gap-2 items-center">
@@ -186,7 +186,7 @@ const Index = () => {
                   <span className="text-sm">Improved Mobility Accessibility</span>
                 </div>
                 <div className="text-left text-sm">3,478 households</div>
-                <div className="text-right text-sm font-medium">6.7M €</div>
+                <div className="text-left text-sm font-medium">6.7M €</div>
               </div>
             </div>
           </CardContent>
