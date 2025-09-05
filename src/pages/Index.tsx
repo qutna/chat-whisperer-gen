@@ -62,8 +62,8 @@ const Index = () => {
               <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground font-medium">
                 <div>Initiative</div>
                 <div className="text-center">Nr of Trips</div>
-                <div className="text-center">Avg Trip Support</div>
-                <div className="text-right">Total Investment</div>
+                <div className="text-left">Avg Trip Support</div>
+                <div className="text-left">Total Investment</div>
               </div>
               
               <div className="grid grid-cols-4 gap-2 items-center">
@@ -72,8 +72,8 @@ const Index = () => {
                   <span className="text-sm">Cargo Bike</span>
                 </div>
                 <div className="text-center text-sm">454k</div>
-                <div className="text-center text-sm">1.56 €</div>
-                <div className="text-right text-sm font-medium">0.71M €</div>
+                <div className="text-left text-sm">1.56 €</div>
+                <div className="text-left text-sm font-medium">0.71M €</div>
               </div>
               
               <div className="grid grid-cols-4 gap-2 items-center">
@@ -82,8 +82,8 @@ const Index = () => {
                   <span className="text-sm">Bike</span>
                 </div>
                 <div className="text-center text-sm">5756k</div>
-                <div className="text-center text-sm">0.81 €</div>
-                <div className="text-right text-sm font-medium">4.66M €</div>
+                <div className="text-left text-sm">0.81 €</div>
+                <div className="text-left text-sm font-medium">4.66M €</div>
               </div>
               
               <div className="grid grid-cols-4 gap-2 items-center">
@@ -92,8 +92,8 @@ const Index = () => {
                   <span className="text-sm">Carpool</span>
                 </div>
                 <div className="text-center text-sm">1578k</div>
-                <div className="text-center text-sm">2.03 €</div>
-                <div className="text-right text-sm font-medium">3.21M €</div>
+                <div className="text-left text-sm">2.03 €</div>
+                <div className="text-left text-sm font-medium">3.21M €</div>
               </div>
               
               <div className="grid grid-cols-4 gap-2 items-center">
@@ -102,8 +102,8 @@ const Index = () => {
                   <span className="text-sm">eScooters</span>
                 </div>
                 <div className="text-center text-sm">2338</div>
-                <div className="text-center text-sm">0.45 €</div>
-                <div className="text-right text-sm font-medium">1.05k €</div>
+                <div className="text-left text-sm">0.45 €</div>
+                <div className="text-left text-sm font-medium">1.05k €</div>
               </div>
               
               <div className="grid grid-cols-4 gap-2 items-center">
@@ -112,8 +112,8 @@ const Index = () => {
                   <span className="text-sm">AVs</span>
                 </div>
                 <div className="text-center text-sm">2264</div>
-                <div className="text-center text-sm">1.22 €</div>
-                <div className="text-right text-sm font-medium">2.76k €</div>
+                <div className="text-left text-sm">1.22 €</div>
+                <div className="text-left text-sm font-medium">2.76k €</div>
               </div>
             </div>
           </CardContent>
