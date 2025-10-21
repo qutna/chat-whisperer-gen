@@ -11,6 +11,7 @@ export default function TripsPage() {
   const [progress, setProgress] = useState(0);
   const [generatedTrips, setGeneratedTrips] = useState<any[]>([]);
   const [stats, setStats] = useState<{ pbike: number; ebike: number } | null>(null);
+  const [saveToDb, setSaveToDb] = useState(true);
 
   const TOTAL_TRIPS = 915300; // 652,742 pbikes + 262,558 ebikes
   const BATCH_SIZE = 10000;
@@ -32,6 +33,7 @@ export default function TripsPage() {
           body: {
             batch_size: BATCH_SIZE,
             batch_number: batch,
+            save_to_db: saveToDb,
           },
         });
 
@@ -49,7 +51,11 @@ export default function TripsPage() {
 
       setGeneratedTrips(allTrips);
       setStats({ pbike: pbikeCount, ebike: ebikeCount });
-      toast.success(`Generated ${allTrips.length.toLocaleString()} MDS trips successfully!`);
+      
+      const message = saveToDb 
+        ? `Generated and saved ${allTrips.length.toLocaleString()} MDS trips to database!`
+        : `Generated ${allTrips.length.toLocaleString()} MDS trips successfully!`;
+      toast.success(message);
     } catch (error: any) {
       console.error("Error generating trips:", error);
       toast.error(`Failed to generate trips: ${error.message}`);
@@ -107,6 +113,18 @@ export default function TripsPage() {
               <li>Period: July 1 - September 30, 2025</li>
               <li>MDS 2.0 compliant format</li>
             </ul>
+          </div>
+
+          <div className="flex items-center gap-4 mb-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={saveToDb}
+                onChange={(e) => setSaveToDb(e.target.checked)}
+                className="rounded"
+              />
+              Save to database
+            </label>
           </div>
 
           <div className="flex gap-2">

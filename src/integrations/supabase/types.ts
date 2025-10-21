@@ -14,7 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      trips: {
+        Row: {
+          accuracy: number
+          actual_cost: number | null
+          created_at: string
+          currency: string | null
+          device_id: string
+          end_location: Json
+          end_time: string
+          propulsion_types: string[]
+          provider_id: string
+          provider_name: string
+          route: Json
+          standard_cost: number | null
+          start_location: Json
+          start_time: string
+          trip_distance: number
+          trip_duration: number
+          trip_id: string
+          vehicle_type: string
+        }
+        Insert: {
+          accuracy: number
+          actual_cost?: number | null
+          created_at?: string
+          currency?: string | null
+          device_id: string
+          end_location: Json
+          end_time: string
+          propulsion_types: string[]
+          provider_id: string
+          provider_name: string
+          route: Json
+          standard_cost?: number | null
+          start_location: Json
+          start_time: string
+          trip_distance: number
+          trip_duration: number
+          trip_id: string
+          vehicle_type: string
+        }
+        Update: {
+          accuracy?: number
+          actual_cost?: number | null
+          created_at?: string
+          currency?: string | null
+          device_id?: string
+          end_location?: Json
+          end_time?: string
+          propulsion_types?: string[]
+          provider_id?: string
+          provider_name?: string
+          route?: Json
+          standard_cost?: number | null
+          start_location?: Json
+          start_time?: string
+          trip_distance?: number
+          trip_duration?: number
+          trip_id?: string
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

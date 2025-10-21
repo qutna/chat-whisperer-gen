@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -229,7 +230,7 @@ serve(async (req) => {
   }
 
   try {
-    const { batch_size = 1000, batch_number = 1, vehicle_type } = await req.json();
+    const { batch_size = 1000, batch_number = 1, vehicle_type, save_to_db = false } = await req.json();
 
     console.log(`Generating batch ${batch_number} with size ${batch_size} for ${vehicle_type || 'all types'}`);
 
@@ -269,6 +270,24 @@ serve(async (req) => {
 
     console.log(`Generated ${trips.length} trips (${pbikesInBatch} pbikes, ${ebikesInBatch} ebikes)`);
 
+    // Save to database if requested
+    if (save_to_db) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+      const { error: insertError } = await supabase
+        .from('trips')
+        .insert(trips);
+
+      if (insertError) {
+        console.error('Error inserting trips:', insertError);
+        throw new Error(`Failed to save trips to database: ${insertError.message}`);
+      }
+
+      console.log(`Successfully saved ${trips.length} trips to database`);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -276,6 +295,7 @@ serve(async (req) => {
         trips_count: trips.length,
         pbike_count: pbikesInBatch,
         ebike_count: ebikesInBatch,
+        saved_to_db: save_to_db,
         trips,
       }),
       {
