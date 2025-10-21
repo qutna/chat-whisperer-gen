@@ -1,17 +1,13 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function TripsPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [generatedTrips, setGeneratedTrips] = useState<any[]>([]);
   const [stats, setStats] = useState<{ pbike: number; ebike: number } | null>(null);
-  const [saveToDb, setSaveToDb] = useState(true);
 
   const TOTAL_TRIPS = 915300; // 652,742 pbikes + 262,558 ebikes
   const BATCH_SIZE = 10000;
@@ -19,28 +15,27 @@ export default function TripsPage() {
   const generateAllTrips = async () => {
     setIsGenerating(true);
     setProgress(0);
-    setGeneratedTrips([]);
     setStats(null);
 
-    const allTrips: any[] = [];
     const totalBatches = Math.ceil(TOTAL_TRIPS / BATCH_SIZE);
     let pbikeCount = 0;
     let ebikeCount = 0;
 
     try {
+      toast.info("Starting trip generation...");
+      
       for (let batch = 1; batch <= totalBatches; batch++) {
         const { data, error } = await supabase.functions.invoke("generate-mds-trips", {
           body: {
             batch_size: BATCH_SIZE,
             batch_number: batch,
-            save_to_db: saveToDb,
+            save_to_db: true,
           },
         });
 
         if (error) throw error;
 
-        if (data?.success && data?.trips) {
-          allTrips.push(...data.trips);
+        if (data?.success) {
           pbikeCount += data.pbike_count || 0;
           ebikeCount += data.ebike_count || 0;
           setProgress((batch / totalBatches) * 100);
@@ -49,13 +44,8 @@ export default function TripsPage() {
         }
       }
 
-      setGeneratedTrips(allTrips);
       setStats({ pbike: pbikeCount, ebike: ebikeCount });
-      
-      const message = saveToDb 
-        ? `Generated and saved ${allTrips.length.toLocaleString()} MDS trips to database!`
-        : `Generated ${allTrips.length.toLocaleString()} MDS trips successfully!`;
-      toast.success(message);
+      toast.success(`Generated and saved ${TOTAL_TRIPS.toLocaleString()} MDS trips to database!`);
     } catch (error: any) {
       console.error("Error generating trips:", error);
       toast.error(`Failed to generate trips: ${error.message}`);
@@ -64,24 +54,10 @@ export default function TripsPage() {
     }
   };
 
-  const downloadTrips = () => {
-    if (generatedTrips.length === 0) {
-      toast.error("No trips to download");
-      return;
-    }
-
-    const json = JSON.stringify(generatedTrips, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `copenhagen-mds-trips-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast.success("Download started");
-  };
+  useEffect(() => {
+    // Auto-generate trips on mount
+    generateAllTrips();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -115,46 +91,6 @@ export default function TripsPage() {
             </ul>
           </div>
 
-          <div className="flex items-center gap-4 mb-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={saveToDb}
-                onChange={(e) => setSaveToDb(e.target.checked)}
-                className="rounded"
-              />
-              Save to database
-            </label>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              onClick={generateAllTrips}
-              disabled={isGenerating}
-              size="lg"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                "Generate All Trips"
-              )}
-            </Button>
-
-            {generatedTrips.length > 0 && (
-              <Button
-                onClick={downloadTrips}
-                variant="outline"
-                size="lg"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download JSON
-              </Button>
-            )}
-          </div>
-
           {isGenerating && (
             <div className="space-y-2">
               <Progress value={progress} className="w-full" />
@@ -172,7 +108,7 @@ export default function TripsPage() {
               <CardContent className="space-y-2">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold">{generatedTrips.length.toLocaleString()}</div>
+                    <div className="text-2xl font-bold">{TOTAL_TRIPS.toLocaleString()}</div>
                     <div className="text-sm text-muted-foreground">Total Trips</div>
                   </div>
                   <div>
