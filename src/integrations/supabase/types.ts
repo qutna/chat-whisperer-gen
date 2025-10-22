@@ -82,7 +82,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_trip_aggregation: {
+        Args: { p_dimension: string; p_metric: string }
+        Returns: {
+          dimension: string
+          value: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
