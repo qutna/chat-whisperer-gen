@@ -1,1 +1,4 @@
 project_id = "nsakwffvlgrlxcyozoft"
+
+[functions.seed-trips]
+verify_jwt = false
