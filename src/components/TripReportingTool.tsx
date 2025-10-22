@@ -28,73 +28,21 @@ export function TripReportingTool() {
   const fetchReportData = async () => {
     setLoading(true);
     try {
-      const { data: trips, error } = await supabase
-        .from('trips')
-        .select('provider_name, vehicle_type, propulsion_types, trip_distance, trip_duration, actual_cost, start_time');
-
-      if (error) throw error;
-      if (!trips) return;
-
-      // Process data based on selected dimension and metric
-      const aggregated = new Map<string, { sum: number; count: number }>();
-
-      trips.forEach((trip) => {
-        let dimValue: string;
-        
-        switch (dimension) {
-          case "provider_name":
-            dimValue = trip.provider_name;
-            break;
-          case "vehicle_type":
-            dimValue = trip.vehicle_type;
-            break;
-          case "propulsion_type":
-            dimValue = trip.propulsion_types?.[0] || "unknown";
-            break;
-          case "date":
-            const date = new Date(trip.start_time);
-            dimValue = date.toISOString().split('T')[0];
-            break;
-          default:
-            dimValue = "unknown";
-        }
-
-        if (!aggregated.has(dimValue)) {
-          aggregated.set(dimValue, { sum: 0, count: 0 });
-        }
-
-        const current = aggregated.get(dimValue)!;
-        current.count += 1;
-
-        switch (metric) {
-          case "count":
-            current.sum = current.count;
-            break;
-          case "total_distance":
-          case "avg_distance":
-            current.sum += trip.trip_distance || 0;
-            break;
-          case "total_duration":
-          case "avg_duration":
-            current.sum += trip.trip_duration || 0;
-            break;
-          case "total_cost":
-          case "avg_cost":
-            current.sum += trip.actual_cost || 0;
-            break;
-        }
+      const { data: result, error } = await supabase.rpc('get_trip_aggregation', {
+        p_dimension: dimension,
+        p_metric: metric
       });
 
-      // Convert to array and calculate averages if needed
-      const result: ReportData[] = Array.from(aggregated.entries()).map(([dim, values]) => {
-        let value = values.sum;
-        if (metric.startsWith("avg_")) {
-          value = values.sum / values.count;
-        }
-        return { dimension: dim, value };
-      }).sort((a, b) => b.value - a.value);
+      if (error) throw error;
+      if (!result) return;
 
-      setData(result);
+      // Convert the result to ReportData format
+      const reportData: ReportData[] = result.map((row: any) => ({
+        dimension: row.dimension || 'Unknown',
+        value: parseFloat(row.value) || 0
+      }));
+
+      setData(reportData);
     } catch (error) {
       console.error('Error fetching report data:', error);
     } finally {
