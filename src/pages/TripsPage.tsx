@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GlobalFilters } from "@/components/GlobalFilters";
 import { GraphView } from "@/components/GraphView";
 import { TripFilters } from "@/types/tripFilters";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Info } from "lucide-react";
 
 export default function TripsPage() {
@@ -16,19 +16,21 @@ export default function TripsPage() {
     timeSlots: [],
     durationBuckets: [],
   });
+  
+  const [infoOpen, setInfoOpen] = useState(false);
 
   return (
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold text-foreground">Trips</h1>
-          <HoverCard>
-            <HoverCardTrigger asChild>
+          <Popover open={infoOpen} onOpenChange={setInfoOpen}>
+            <PopoverTrigger asChild>
               <button className="text-muted-foreground hover:text-foreground transition-colors">
                 <Info className="h-5 w-5" />
               </button>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-96">
+            </PopoverTrigger>
+            <PopoverContent className="w-[653px]">
               <div className="space-y-3">
                 <div>
                   <h4 className="font-semibold text-sm mb-1">MDS Trip Data Specifications</h4>
@@ -49,8 +51,8 @@ export default function TripsPage() {
                   </ul>
                 </div>
               </div>
-            </HoverCardContent>
-          </HoverCard>
+            </PopoverContent>
+          </Popover>
         </div>
         <p className="text-muted-foreground">
           MDS trip data visualization and analysis for Copenhagen
