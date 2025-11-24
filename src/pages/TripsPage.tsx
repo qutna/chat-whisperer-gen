@@ -1,64 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { TripReportingTool } from "@/components/TripReportingTool";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { GlobalFilters } from "@/components/GlobalFilters";
+import { GraphView } from "@/components/GraphView";
+import { TripFilters } from "@/types/tripFilters";
 
 export default function TripsPage() {
-  const [stats, setStats] = useState({
-    totalTrips: 0,
-    pbikeTrips: 0,
-    ebikeTrips: 0,
+  const [filters, setFilters] = useState<TripFilters>({
+    months: [],
+    providers: [],
+    vehicleTypes: [],
+    daysOfWeek: [],
+    timeSlots: [],
+    durationBuckets: [],
   });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const { count: totalCount, error: totalError } = await supabase
-          .from('trips')
-          .select('*', { count: 'exact', head: true });
-
-        if (totalError) throw totalError;
-
-        const { data: pbikeData, error: pbikeError } = await supabase
-          .from('trips')
-          .select('propulsion_types')
-          .contains('propulsion_types', ['human']);
-
-        if (pbikeError) throw pbikeError;
-
-        const { data: ebikeData, error: ebikeError } = await supabase
-          .from('trips')
-          .select('propulsion_types')
-          .contains('propulsion_types', ['electric_assist']);
-
-        if (ebikeError) throw ebikeError;
-
-        setStats({
-          totalTrips: totalCount || 0,
-          pbikeTrips: pbikeData?.length || 0,
-          ebikeTrips: ebikeData?.length || 0,
-        });
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-    
-    // Poll for updates every 10 seconds
-    const interval = setInterval(fetchStats, 10000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Trips</h1>
         <p className="text-muted-foreground">
-          MDS trip data for Copenhagen mobility patterns
+          MDS trip data visualization and analysis for Copenhagen
         </p>
       </div>
 
@@ -87,34 +49,53 @@ export default function TripsPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Trip Statistics</CardTitle>
-          <CardDescription>Current database statistics (auto-refreshes every 10 seconds)</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading statistics...</p>
-          ) : (
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold">{stats.totalTrips.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground">Total Trips</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-600">{stats.pbikeTrips.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground">P.Bikes</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-green-600">{stats.ebikeTrips.toLocaleString()}</div>
-                <div className="text-sm text-muted-foreground">E-Bikes</div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-1">
+          <GlobalFilters filters={filters} onFiltersChange={setFilters} />
+        </div>
 
-      <TripReportingTool />
+        <div className="lg:col-span-3">
+          <Tabs defaultValue="graph" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="graph">Graph</TabsTrigger>
+              <TabsTrigger value="table" disabled>Table</TabsTrigger>
+              <TabsTrigger value="map" disabled>Map</TabsTrigger>
+              <TabsTrigger value="download" disabled>Download</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="graph" className="mt-6">
+              <GraphView filters={filters} />
+            </TabsContent>
+            
+            <TabsContent value="table" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Table View</CardTitle>
+                  <CardDescription>Coming in Phase 2</CardDescription>
+                </CardHeader>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="map" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Map View</CardTitle>
+                  <CardDescription>Coming in Phase 3</CardDescription>
+                </CardHeader>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="download" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Download Data</CardTitle>
+                  <CardDescription>Coming in Phase 4</CardDescription>
+                </CardHeader>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 }
