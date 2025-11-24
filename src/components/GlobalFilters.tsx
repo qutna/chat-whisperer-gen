@@ -186,7 +186,7 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
 
         {/* Time Slots */}
         <div>
-          <Label className="text-sm font-semibold mb-2 block">Time of Day (Half-hourly)</Label>
+          <Label className="text-sm font-semibold mb-2 block">Time of Day (Hourly)</Label>
           <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto">
             {TIME_SLOTS.map(slot => (
               <div key={slot} className="flex items-center space-x-2">
