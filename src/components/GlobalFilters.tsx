@@ -20,35 +20,51 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        // Fetch unique months
-        const { data: monthData } = await supabase
-          .from('trips')
-          .select('start_time')
-          .order('start_time', { ascending: true });
+        // Fetch unique months using aggregation
+        const { data: monthData, error: monthError } = await supabase
+          .rpc('get_trip_aggregation', {
+            p_dimension: 'month',
+            p_metric: 'count'
+          });
 
-        const months = [...new Set(
-          monthData?.map(t => t.start_time.substring(0, 7)) || []
-        )].sort();
+        if (monthError) {
+          console.error('Error fetching months:', monthError);
+        }
 
-        // Fetch unique providers
-        const { data: providerData } = await supabase
-          .from('trips')
-          .select('provider_name')
-          .order('provider_name');
+        const months = monthData?.map(d => d.dimension).filter(Boolean).sort() || [];
 
-        const providers = [...new Set(
-          providerData?.map(t => t.provider_name) || []
-        )].sort();
+        // Fetch unique providers using aggregation
+        const { data: providerData, error: providerError } = await supabase
+          .rpc('get_trip_aggregation', {
+            p_dimension: 'provider_name',
+            p_metric: 'count'
+          });
 
-        // Fetch unique vehicle types
-        const { data: vehicleData } = await supabase
-          .from('trips')
-          .select('vehicle_type')
-          .order('vehicle_type');
+        if (providerError) {
+          console.error('Error fetching providers:', providerError);
+        }
 
-        const vehicleTypes = [...new Set(
-          vehicleData?.map(t => t.vehicle_type) || []
-        )].sort();
+        const providers = providerData?.map(d => d.dimension).filter(Boolean).sort() || [];
+
+        // Fetch unique vehicle types using aggregation
+        const { data: vehicleData, error: vehicleError } = await supabase
+          .rpc('get_trip_aggregation', {
+            p_dimension: 'vehicle_type',
+            p_metric: 'count'
+          });
+
+        if (vehicleError) {
+          console.error('Error fetching vehicle types:', vehicleError);
+        }
+
+        const vehicleTypes = vehicleData?.map(d => d.dimension).filter(Boolean).sort() || [];
+
+        console.log('Filter options loaded:', {
+          months: months.length,
+          providers: providers.length,
+          vehicleTypes: vehicleTypes.length,
+          providersList: providers
+        });
 
         setAvailableMonths(months);
         setAvailableProviders(providers);
