@@ -83,7 +83,16 @@ export type Database = {
     }
     Functions: {
       get_trip_aggregation: {
-        Args: { p_dimension: string; p_metric: string }
+        Args: {
+          p_dimension: string
+          p_filter_days_of_week?: number[]
+          p_filter_duration_buckets?: string[]
+          p_filter_months?: string[]
+          p_filter_providers?: string[]
+          p_filter_time_slots?: string[]
+          p_filter_vehicle_types?: string[]
+          p_metric: string
+        }
         Returns: {
           dimension: string
           value: number
