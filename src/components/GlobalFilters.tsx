@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { TripFilters, DAYS_OF_WEEK, DURATION_BUCKETS, TIME_SLOTS } from "@/types/tripFilters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface GlobalFiltersProps {
   filters: TripFilters;
@@ -111,138 +111,152 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
       <CardHeader>
         <CardTitle>Global Filters</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Months */}
-        <div>
-          <Label className="text-sm font-semibold mb-2 block">Months</Label>
-          <div className="grid grid-cols-3 gap-2 max-h-32 overflow-y-auto">
-            {availableMonths.map(month => (
-              <div key={month} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`month-${month}`}
-                  checked={filters.months.includes(month)}
-                  onCheckedChange={() => toggleFilter('months', month)}
-                />
-                <label
-                  htmlFor={`month-${month}`}
-                  className="text-sm cursor-pointer"
-                >
-                  {month}
-                </label>
+      <CardContent>
+        <Accordion type="multiple" className="w-full">
+          {/* Months */}
+          <AccordionItem value="months">
+            <AccordionTrigger className="text-sm font-semibold">Months</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {availableMonths.map(month => (
+                  <div key={month} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`month-${month}`}
+                      checked={filters.months.includes(month)}
+                      onCheckedChange={() => toggleFilter('months', month)}
+                    />
+                    <label
+                      htmlFor={`month-${month}`}
+                      className="text-sm cursor-pointer truncate flex-1"
+                    >
+                      {month}
+                    </label>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Operators */}
-        <div>
-          <Label className="text-sm font-semibold mb-2 block">Operators</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {availableProviders.map(provider => (
-              <div key={provider} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`provider-${provider}`}
-                  checked={filters.providers.includes(provider)}
-                  onCheckedChange={() => toggleFilter('providers', provider)}
-                />
-                <label
-                  htmlFor={`provider-${provider}`}
-                  className="text-sm cursor-pointer"
-                >
-                  {provider}
-                </label>
+          {/* Operators */}
+          <AccordionItem value="operators">
+            <AccordionTrigger className="text-sm font-semibold">Operators</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {availableProviders.map(provider => (
+                  <div key={provider} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`provider-${provider}`}
+                      checked={filters.providers.includes(provider)}
+                      onCheckedChange={() => toggleFilter('providers', provider)}
+                    />
+                    <label
+                      htmlFor={`provider-${provider}`}
+                      className="text-sm cursor-pointer truncate flex-1"
+                    >
+                      {provider}
+                    </label>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Vehicle Types */}
-        <div>
-          <Label className="text-sm font-semibold mb-2 block">Vehicle Types</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {availableVehicleTypes.map(type => (
-              <div key={type} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`vehicle-${type}`}
-                  checked={filters.vehicleTypes.includes(type)}
-                  onCheckedChange={() => toggleFilter('vehicleTypes', type)}
-                />
-                <label
-                  htmlFor={`vehicle-${type}`}
-                  className="text-sm cursor-pointer"
-                >
-                  {type}
-                </label>
+          {/* Vehicle Types */}
+          <AccordionItem value="vehicle-types">
+            <AccordionTrigger className="text-sm font-semibold">Vehicle Types</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {availableVehicleTypes.map(type => (
+                  <div key={type} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`vehicle-${type}`}
+                      checked={filters.vehicleTypes.includes(type)}
+                      onCheckedChange={() => toggleFilter('vehicleTypes', type)}
+                    />
+                    <label
+                      htmlFor={`vehicle-${type}`}
+                      className="text-sm cursor-pointer truncate flex-1"
+                    >
+                      {type}
+                    </label>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Days of Week */}
-        <div>
-          <Label className="text-sm font-semibold mb-2 block">Days of Week</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {DAYS_OF_WEEK.map(day => (
-              <div key={day.value} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`day-${day.value}`}
-                  checked={filters.daysOfWeek.includes(day.value)}
-                  onCheckedChange={() => toggleFilter('daysOfWeek', day.value)}
-                />
-                <label
-                  htmlFor={`day-${day.value}`}
-                  className="text-sm cursor-pointer"
-                >
-                  {day.label}
-                </label>
+          {/* Days of Week */}
+          <AccordionItem value="days-of-week">
+            <AccordionTrigger className="text-sm font-semibold">Days of Week</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {DAYS_OF_WEEK.map(day => (
+                  <div key={day.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`day-${day.value}`}
+                      checked={filters.daysOfWeek.includes(day.value)}
+                      onCheckedChange={() => toggleFilter('daysOfWeek', day.value)}
+                    />
+                    <label
+                      htmlFor={`day-${day.value}`}
+                      className="text-sm cursor-pointer truncate flex-1"
+                    >
+                      {day.label}
+                    </label>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Time Slots */}
-        <div>
-          <Label className="text-sm font-semibold mb-2 block">Time of Day (Hourly)</Label>
-          <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto">
-            {TIME_SLOTS.map(slot => (
-              <div key={slot} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`time-${slot}`}
-                  checked={filters.timeSlots.includes(slot)}
-                  onCheckedChange={() => toggleFilter('timeSlots', slot)}
-                />
-                <label
-                  htmlFor={`time-${slot}`}
-                  className="text-xs cursor-pointer"
-                >
-                  {slot}
-                </label>
+          {/* Time Slots */}
+          <AccordionItem value="time-slots">
+            <AccordionTrigger className="text-sm font-semibold">Time of Day (Hourly)</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {TIME_SLOTS.map(slot => (
+                  <div key={slot} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`time-${slot}`}
+                      checked={filters.timeSlots.includes(slot)}
+                      onCheckedChange={() => toggleFilter('timeSlots', slot)}
+                    />
+                    <label
+                      htmlFor={`time-${slot}`}
+                      className="text-sm cursor-pointer truncate flex-1"
+                    >
+                      {slot}
+                    </label>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Duration Buckets */}
-        <div>
-          <Label className="text-sm font-semibold mb-2 block">Trip Duration</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {DURATION_BUCKETS.map(bucket => (
-              <div key={bucket} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`duration-${bucket}`}
-                  checked={filters.durationBuckets.includes(bucket)}
-                  onCheckedChange={() => toggleFilter('durationBuckets', bucket)}
-                />
-                <label
-                  htmlFor={`duration-${bucket}`}
-                  className="text-sm cursor-pointer"
-                >
-                  {bucket}
-                </label>
+          {/* Duration Buckets */}
+          <AccordionItem value="duration">
+            <AccordionTrigger className="text-sm font-semibold">Trip Duration</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {DURATION_BUCKETS.map(bucket => (
+                  <div key={bucket} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`duration-${bucket}`}
+                      checked={filters.durationBuckets.includes(bucket)}
+                      onCheckedChange={() => toggleFilter('durationBuckets', bucket)}
+                    />
+                    <label
+                      htmlFor={`duration-${bucket}`}
+                      className="text-sm cursor-pointer truncate flex-1"
+                    >
+                      {bucket}
+                    </label>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </CardContent>
     </Card>
   );
