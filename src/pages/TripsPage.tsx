@@ -93,7 +93,7 @@ export default function TripsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="count">Count</SelectItem>
+                    <SelectItem value="count">Trip Count</SelectItem>
                     <SelectItem value="total_distance">Total Distance</SelectItem>
                     <SelectItem value="avg_distance">Average Distance</SelectItem>
                     <SelectItem value="total_duration">Total Duration</SelectItem>
