@@ -8,6 +8,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 interface GraphViewProps {
   filters: TripFilters;
+  dimension: string;
+  metric: string;
 }
 
 interface ReportData {
@@ -15,8 +17,7 @@ interface ReportData {
   value: number;
 }
 
-export function GraphView({ filters }: GraphViewProps) {
-  const [dimension, setDimension] = useState("month");
+export function GraphView({ filters, dimension, metric }: GraphViewProps) {
   const [data, setData] = useState<ReportData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +27,7 @@ export function GraphView({ filters }: GraphViewProps) {
       try {
         const { data: result, error } = await supabase.rpc('get_trip_aggregation', {
           p_dimension: dimension,
-          p_metric: 'count',
+          p_metric: metric,
           p_filter_months: filters.months.length > 0 ? filters.months : null,
           p_filter_providers: filters.providers.length > 0 ? filters.providers : null,
           p_filter_vehicle_types: filters.vehicleTypes.length > 0 ? filters.vehicleTypes : null,
@@ -52,7 +53,7 @@ export function GraphView({ filters }: GraphViewProps) {
     };
 
     fetchData();
-  }, [dimension, filters]);
+  }, [dimension, metric, filters]);
 
   const getDimensionLabel = () => {
     switch (dimension) {
@@ -66,31 +67,28 @@ export function GraphView({ filters }: GraphViewProps) {
     }
   };
 
+  const getMetricLabel = () => {
+    switch (metric) {
+      case "count": return "Number of Trips";
+      case "total_distance": return "Total Distance (m)";
+      case "avg_distance": return "Average Distance (m)";
+      case "total_duration": return "Total Duration (s)";
+      case "avg_duration": return "Average Duration (s)";
+      case "total_cost": return "Total Cost";
+      case "avg_cost": return "Average Cost";
+      default: return metric;
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Trip Count by Dimension</CardTitle>
+        <CardTitle>Trip Data Visualization</CardTitle>
         <CardDescription>
-          Y-axis shows number of trips. Select X-axis dimension below.
+          {getMetricLabel()} by {getDimensionLabel()}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">X-Axis Dimension</label>
-          <Select value={dimension} onValueChange={setDimension}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="month">Month</SelectItem>
-              <SelectItem value="provider_name">Operator</SelectItem>
-              <SelectItem value="vehicle_type">Vehicle Type</SelectItem>
-              <SelectItem value="day_of_week">Day of Week</SelectItem>
-              <SelectItem value="time_of_day">Time of Day</SelectItem>
-              <SelectItem value="duration_bucket">Trip Duration</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
 
         {loading ? (
           <div className="space-y-2">
@@ -106,9 +104,9 @@ export function GraphView({ filters }: GraphViewProps) {
                 textAnchor="end"
                 height={100}
               />
-              <YAxis label={{ value: 'Number of Trips', angle: -90, position: 'insideLeft' }} />
+              <YAxis label={{ value: getMetricLabel(), angle: -90, position: 'insideLeft' }} />
               <Tooltip />
-              <Bar dataKey="value" fill="hsl(var(--primary))" name="Trip Count" />
+              <Bar dataKey="value" fill="hsl(var(--primary))" name={getMetricLabel()} />
             </BarChart>
           </ResponsiveContainer>
         )}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GlobalFilters } from "@/components/GlobalFilters";
 import { GraphView } from "@/components/GraphView";
 import { TripFilters } from "@/types/tripFilters";
@@ -17,6 +18,8 @@ export default function TripsPage() {
     durationBuckets: [],
   });
   
+  const [dimension, setDimension] = useState("month");
+  const [metric, setMetric] = useState("count");
   const [infoOpen, setInfoOpen] = useState(false);
 
   return (
@@ -65,6 +68,43 @@ export default function TripsPage() {
         </div>
 
         <div className="lg:col-span-3">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">X-Axis Dimension</label>
+                <Select value={dimension} onValueChange={setDimension}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="month">Month</SelectItem>
+                    <SelectItem value="provider_name">Operator</SelectItem>
+                    <SelectItem value="vehicle_type">Vehicle Type</SelectItem>
+                    <SelectItem value="day_of_week">Day of Week</SelectItem>
+                    <SelectItem value="time_of_day">Time of Day</SelectItem>
+                    <SelectItem value="duration_bucket">Trip Duration</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Y-Axis Metric</label>
+                <Select value={metric} onValueChange={setMetric}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="count">Count</SelectItem>
+                    <SelectItem value="total_distance">Total Distance</SelectItem>
+                    <SelectItem value="avg_distance">Average Distance</SelectItem>
+                    <SelectItem value="total_duration">Total Duration</SelectItem>
+                    <SelectItem value="avg_duration">Average Duration</SelectItem>
+                    <SelectItem value="total_cost">Total Cost</SelectItem>
+                    <SelectItem value="avg_cost">Average Cost</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
           <Tabs defaultValue="graph" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="graph">Graph</TabsTrigger>
@@ -74,7 +114,7 @@ export default function TripsPage() {
             </TabsList>
             
             <TabsContent value="graph" className="mt-6">
-              <GraphView filters={filters} />
+              <GraphView filters={filters} dimension={dimension} metric={metric} />
             </TabsContent>
             
             <TabsContent value="table" className="mt-6">
@@ -104,6 +144,7 @@ export default function TripsPage() {
               </Card>
             </TabsContent>
           </Tabs>
+          </div>
         </div>
       </div>
     </div>
