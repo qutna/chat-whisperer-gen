@@ -3,6 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { GlobalFilters } from "@/components/GlobalFilters";
 import { GraphView } from "@/components/GraphView";
 import { MapView } from "@/components/MapView";
+import { DownloadDataView } from "@/components/DownloadDataView";
 import { TripFilters } from "@/types/tripFilters";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Info } from "lucide-react";
@@ -106,6 +107,8 @@ export default function TripsPage() {
             </div>
 
             <GraphView filters={filters} dimension={dimension} metric={metric} />
+
+            <DownloadDataView filters={filters} />
 
             <Card className="mt-6">
               <CardHeader>
