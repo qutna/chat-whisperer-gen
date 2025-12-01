@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GlobalFilters } from "@/components/GlobalFilters";
 import { GraphView } from "@/components/GraphView";
+import { MapView } from "@/components/MapView";
 import { TripFilters } from "@/types/tripFilters";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Info } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function TripsPage() {
   const [filters, setFilters] = useState<TripFilters>({
@@ -104,6 +106,19 @@ export default function TripsPage() {
             </div>
 
             <GraphView filters={filters} dimension={dimension} metric={metric} />
+
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Trip Routes Map</CardTitle>
+                <CardDescription>
+                  Routes aggregated by 40×40 pixel grid. Line thickness shows trip count (logarithmic scale), 
+                  color shows average distance.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <MapView filters={filters} />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
