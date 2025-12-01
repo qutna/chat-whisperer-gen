@@ -108,8 +108,6 @@ export default function TripsPage() {
 
             <GraphView filters={filters} dimension={dimension} metric={metric} />
 
-            <DownloadDataView filters={filters} />
-
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle>Trip Routes Map</CardTitle>
@@ -122,6 +120,8 @@ export default function TripsPage() {
                 <MapView filters={filters} />
               </CardContent>
             </Card>
+
+            <DownloadDataView filters={filters} />
           </div>
         </div>
       </div>
