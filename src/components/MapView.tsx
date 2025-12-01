@@ -40,16 +40,16 @@ const getDistanceColor = (avgDistance: number): string => {
 
 // Aggregate trips client-side
 const aggregateTrips = (
-  trips: Array<{ start_location: { lng: number; lat: number }; end_location: { lng: number; lat: number }; trip_distance: number }>,
+  trips: Array<{ start_location: { type: string; coordinates: [number, number] }; end_location: { type: string; coordinates: [number, number] }; trip_distance: number }>,
   gridSizeDeg: number
 ): TripRoute[] => {
   const aggregated = new Map<string, { count: number; totalDistance: number; startLng: number; startLat: number; endLng: number; endLat: number }>();
 
   trips.forEach((trip) => {
-    const startLng = Math.round(trip.start_location.lng / gridSizeDeg) * gridSizeDeg;
-    const startLat = Math.round(trip.start_location.lat / gridSizeDeg) * gridSizeDeg;
-    const endLng = Math.round(trip.end_location.lng / gridSizeDeg) * gridSizeDeg;
-    const endLat = Math.round(trip.end_location.lat / gridSizeDeg) * gridSizeDeg;
+    const startLng = Math.round(trip.start_location.coordinates[0] / gridSizeDeg) * gridSizeDeg;
+    const startLat = Math.round(trip.start_location.coordinates[1] / gridSizeDeg) * gridSizeDeg;
+    const endLng = Math.round(trip.end_location.coordinates[0] / gridSizeDeg) * gridSizeDeg;
+    const endLat = Math.round(trip.end_location.coordinates[1] / gridSizeDeg) * gridSizeDeg;
     
     const key = `${startLng},${startLat},${endLng},${endLat}`;
     
@@ -132,15 +132,20 @@ export function MapView({ filters }: MapViewProps) {
 
       // Filter by viewport bounds and other filters client-side
       let filteredTrips = (data || []).filter((trip) => {
-        const startLocation = trip.start_location as { lng: number; lat: number };
-        const endLocation = trip.end_location as { lng: number; lat: number };
+        const startLocation = trip.start_location as { type: string; coordinates: [number, number] };
+        const endLocation = trip.end_location as { type: string; coordinates: [number, number] };
+        
+        const startLng = startLocation?.coordinates?.[0];
+        const startLat = startLocation?.coordinates?.[1];
+        
+        if (!startLng || !startLat) return false;
         
         // Viewport filter
         const inBounds = 
-          startLocation.lng >= bounds.getWest() &&
-          startLocation.lng <= bounds.getEast() &&
-          startLocation.lat >= bounds.getSouth() &&
-          startLocation.lat <= bounds.getNorth();
+          startLng >= bounds.getWest() &&
+          startLng <= bounds.getEast() &&
+          startLat >= bounds.getSouth() &&
+          startLat <= bounds.getNorth();
         
         return inBounds;
       });
@@ -148,8 +153,8 @@ export function MapView({ filters }: MapViewProps) {
       // Aggregate trips
       const routes = aggregateTrips(
         filteredTrips.map((t) => ({
-          start_location: t.start_location as { lng: number; lat: number },
-          end_location: t.end_location as { lng: number; lat: number },
+          start_location: t.start_location as { type: string; coordinates: [number, number] },
+          end_location: t.end_location as { type: string; coordinates: [number, number] },
           trip_distance: t.trip_distance,
         })),
         gridSizeDeg
