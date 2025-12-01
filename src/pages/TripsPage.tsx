@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GlobalFilters } from "@/components/GlobalFilters";
 import { GraphView } from "@/components/GraphView";
@@ -105,45 +103,7 @@ export default function TripsPage() {
               </div>
             </div>
 
-          <Tabs defaultValue="graph" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="graph">Graph</TabsTrigger>
-              <TabsTrigger value="table" disabled>Table</TabsTrigger>
-              <TabsTrigger value="map" disabled>Map</TabsTrigger>
-              <TabsTrigger value="download" disabled>Download</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="graph" className="mt-6">
-              <GraphView filters={filters} dimension={dimension} metric={metric} />
-            </TabsContent>
-            
-            <TabsContent value="table" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Table View</CardTitle>
-                  <CardDescription>Coming in Phase 2</CardDescription>
-                </CardHeader>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="map" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Map View</CardTitle>
-                  <CardDescription>Coming in Phase 3</CardDescription>
-                </CardHeader>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="download" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Download Data</CardTitle>
-                  <CardDescription>Coming in Phase 4</CardDescription>
-                </CardHeader>
-              </Card>
-            </TabsContent>
-          </Tabs>
+            <GraphView filters={filters} dimension={dimension} metric={metric} />
           </div>
         </div>
       </div>
