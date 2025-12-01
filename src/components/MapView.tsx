@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { format } from 'date-fns';
 import { TripFilters } from '@/types/tripFilters';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -36,6 +37,16 @@ const getDistanceColor = (avgDistance: number): string => {
   if (distanceKm < 1) return '#22c55e'; // green
   if (distanceKm < 3) return '#eab308'; // yellow
   return '#ef4444'; // red
+};
+
+// Convert trip duration (seconds) to duration bucket
+const getDurationBucket = (durationSeconds: number): string => {
+  const minutes = durationSeconds / 60;
+  if (minutes < 10) return '1-10min';
+  if (minutes < 20) return '10-20min';
+  if (minutes < 30) return '20-30min';
+  if (minutes < 60) return '30-60min';
+  return '60+min';
 };
 
 // Aggregate trips client-side
@@ -106,7 +117,7 @@ export function MapView({ filters }: MapViewProps) {
       // Build query with filters
       let query = supabase
         .from('trips')
-        .select('start_location, end_location, trip_distance')
+        .select('start_location, end_location, trip_distance, start_time, trip_duration')
         .gte('trip_duration', 60);
 
       // Apply viewport bounds filter - we need to filter client-side since jsonb
@@ -147,7 +158,33 @@ export function MapView({ filters }: MapViewProps) {
           startLat >= bounds.getSouth() &&
           startLat <= bounds.getNorth();
         
-        return inBounds;
+        if (!inBounds) return false;
+
+        // Months filter
+        if (filters.months.length > 0) {
+          const tripMonth = format(new Date(trip.start_time), 'yyyy-MM');
+          if (!filters.months.includes(tripMonth)) return false;
+        }
+
+        // Days of week filter
+        if (filters.daysOfWeek.length > 0) {
+          const tripDayOfWeek = new Date(trip.start_time).getDay();
+          if (!filters.daysOfWeek.includes(tripDayOfWeek)) return false;
+        }
+
+        // Time slots filter
+        if (filters.timeSlots.length > 0) {
+          const tripHour = format(new Date(trip.start_time), 'HH:00');
+          if (!filters.timeSlots.includes(tripHour)) return false;
+        }
+
+        // Duration buckets filter
+        if (filters.durationBuckets.length > 0) {
+          const bucket = getDurationBucket(trip.trip_duration);
+          if (!filters.durationBuckets.includes(bucket)) return false;
+        }
+        
+        return true;
       });
 
       // Aggregate trips
