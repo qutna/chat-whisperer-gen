@@ -211,7 +211,7 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
 
           {/* Time Slots */}
           <AccordionItem value="time-slots">
-            <AccordionTrigger className="text-sm font-semibold text-left">Time of Day (Hourly)</AccordionTrigger>
+            <AccordionTrigger className="text-sm font-semibold text-left">Time of Day</AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {TIME_SLOTS.map(slot => (
