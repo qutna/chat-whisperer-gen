@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 const mockUser = {
   name: "John Smith",
   role: "Procurement Manager",
-  authority: "City of Amsterdam"
+  authority: "City of Copenhagen"
 };
 
 export function Header() {
