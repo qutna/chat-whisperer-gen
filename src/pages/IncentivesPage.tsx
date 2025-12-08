@@ -1,20 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-interface Incentive {
-  id: number;
-  mode: string;
-  businessModel: string;
-  startLocation: string;
-  endLocation: string;
-  startTime: string;
-  endTime: string;
-  amount: number;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Incentive } from "@/types/tripFilters";
 
 interface Quarter {
   name: string;
@@ -32,62 +24,36 @@ const quarters: Quarter[] = [
   { name: "Q1 2025", startDate: "01/01/2025", endDate: "31/03/2025", status: "planned" },
 ];
 
-const defaultIncentives: Incentive[] = [
-  {
-    id: 1,
-    mode: "bike",
-    businessModel: "sharing",
-    startLocation: "Any",
-    endLocation: "Any",
-    startTime: "Any",
-    endTime: "Any",
-    amount: 1.0
-  },
-  {
-    id: 2,
-    mode: "cargobike",
-    businessModel: "leasing",
-    startLocation: "<100m of daycare institutions",
-    endLocation: "<100m of daycare institutions",
-    startTime: "Any",
-    endTime: "Any",
-    amount: 2.5
-  },
-  {
-    id: 3,
-    mode: "carpool",
-    businessModel: "sharing",
-    startLocation: "Suburb areas",
-    endLocation: "Any",
-    startTime: "07:00-09:00 Mon-Fri",
-    endTime: "Any",
-    amount: 2.0
-  },
-  {
-    id: 4,
-    mode: "AV",
-    businessModel: "sharing",
-    startLocation: "Any",
-    endLocation: "<100m of public transport hubs in suburbs",
-    startTime: "07:00-09:00 Mon-Fri",
-    endTime: "Any",
-    amount: 1.0
-  },
-  {
-    id: 5,
-    mode: "ebike",
-    businessModel: "self-owned",
-    startLocation: "Suburb areas",
-    endLocation: "Suburb areas",
-    startTime: "Any",
-    endTime: "Any",
-    amount: 0.5
-  }
-];
-
 export default function IncentivesPage() {
-  const [currentQuarterIndex, setCurrentQuarterIndex] = useState(3); // Current quarter (Q3 2024)
+  const [currentQuarterIndex, setCurrentQuarterIndex] = useState(3);
+  const [incentives, setIncentives] = useState<Incentive[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   const currentQuarter = quarters[currentQuarterIndex];
+
+  useEffect(() => {
+    const fetchIncentives = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('incentives')
+          .select('*')
+          .order('numeric_id');
+
+        if (error) {
+          console.error('Error fetching incentives:', error);
+        } else {
+          setIncentives(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching incentives:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIncentives();
+  }, []);
 
   const goToPreviousPeriod = () => {
     if (currentQuarterIndex > 0) {
@@ -108,6 +74,11 @@ export default function IncentivesPage() {
       case "planned": return "outline";
       default: return "secondary";
     }
+  };
+
+  const formatTime = (time: string | null) => {
+    if (!time) return "Any";
+    return time.slice(0, 5); // Format HH:MM
   };
 
   return (
@@ -169,32 +140,48 @@ export default function IncentivesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mode</TableHead>
-                <TableHead>Business Model</TableHead>
-                <TableHead>Start Location</TableHead>
-                <TableHead>End Location</TableHead>
-                <TableHead>Start Time</TableHead>
-                <TableHead>End Time</TableHead>
-                <TableHead>Incentive Amount (EUR)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {defaultIncentives.map((incentive) => (
-                <TableRow key={incentive.id}>
-                  <TableCell className="font-medium">{incentive.mode}</TableCell>
-                  <TableCell>{incentive.businessModel}</TableCell>
-                  <TableCell>{incentive.startLocation}</TableCell>
-                  <TableCell>{incentive.endLocation}</TableCell>
-                  <TableCell>{incentive.startTime}</TableCell>
-                  <TableCell>{incentive.endTime}</TableCell>
-                  <TableCell>€{incentive.amount.toFixed(2)}</TableCell>
+          {loading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-16">ID</TableHead>
+                  <TableHead>Brief Name</TableHead>
+                  <TableHead>Mode</TableHead>
+                  <TableHead>Business Model</TableHead>
+                  <TableHead>Start Location</TableHead>
+                  <TableHead>End Location</TableHead>
+                  <TableHead>Start Time</TableHead>
+                  <TableHead>End Time</TableHead>
+                  <TableHead>Amount (EUR)</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {incentives.map((incentive) => (
+                  <TableRow key={incentive.id}>
+                    <TableCell className="font-mono text-muted-foreground">{incentive.numeric_id}</TableCell>
+                    <TableCell className="font-medium">{incentive.brief_name}</TableCell>
+                    <TableCell>{incentive.vehicle_types?.[0] || '-'}</TableCell>
+                    <TableCell>{incentive.business_model || '-'}</TableCell>
+                    <TableCell className="max-w-[200px] truncate" title={incentive.start_location_description || 'Any'}>
+                      {incentive.start_location_description || 'Any'}
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate" title={incentive.end_location_description || 'Any'}>
+                      {incentive.end_location_description || 'Any'}
+                    </TableCell>
+                    <TableCell>{formatTime(incentive.time_start)}</TableCell>
+                    <TableCell>{formatTime(incentive.time_end)}</TableCell>
+                    <TableCell>€{incentive.amount.toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

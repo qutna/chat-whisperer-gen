@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      incentives: {
+        Row: {
+          amount: number
+          brief_name: string
+          business_model: string | null
+          created_at: string | null
+          days_of_week: number[] | null
+          description: string | null
+          end_location_description: string | null
+          id: string
+          name: string
+          numeric_id: number
+          propulsion_types: string[] | null
+          providers: string[] | null
+          start_location_description: string | null
+          status: string | null
+          time_end: string | null
+          time_start: string | null
+          valid_from: string
+          valid_to: string
+          vehicle_types: string[] | null
+        }
+        Insert: {
+          amount: number
+          brief_name?: string
+          business_model?: string | null
+          created_at?: string | null
+          days_of_week?: number[] | null
+          description?: string | null
+          end_location_description?: string | null
+          id?: string
+          name: string
+          numeric_id?: number
+          propulsion_types?: string[] | null
+          providers?: string[] | null
+          start_location_description?: string | null
+          status?: string | null
+          time_end?: string | null
+          time_start?: string | null
+          valid_from: string
+          valid_to: string
+          vehicle_types?: string[] | null
+        }
+        Update: {
+          amount?: number
+          brief_name?: string
+          business_model?: string | null
+          created_at?: string | null
+          days_of_week?: number[] | null
+          description?: string | null
+          end_location_description?: string | null
+          id?: string
+          name?: string
+          numeric_id?: number
+          propulsion_types?: string[] | null
+          providers?: string[] | null
+          start_location_description?: string | null
+          status?: string | null
+          time_end?: string | null
+          time_start?: string | null
+          valid_from?: string
+          valid_to?: string
+          vehicle_types?: string[] | null
+        }
+        Relationships: []
+      }
       trips: {
         Row: {
           accuracy: number
@@ -23,6 +89,7 @@ export type Database = {
           device_id: string
           end_location: Json
           end_time: string
+          incentive_id: string | null
           propulsion_types: string[]
           provider_id: string
           provider_name: string
@@ -43,6 +110,7 @@ export type Database = {
           device_id: string
           end_location: Json
           end_time: string
+          incentive_id?: string | null
           propulsion_types: string[]
           provider_id: string
           provider_name: string
@@ -63,6 +131,7 @@ export type Database = {
           device_id?: string
           end_location?: Json
           end_time?: string
+          incentive_id?: string | null
           propulsion_types?: string[]
           provider_id?: string
           provider_name?: string
@@ -75,29 +144,55 @@ export type Database = {
           trip_id?: string
           vehicle_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "trips_incentive_id_fkey"
+            columns: ["incentive_id"]
+            isOneToOne: false
+            referencedRelation: "incentives"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      get_trip_aggregation: {
-        Args: {
-          p_dimension: string
-          p_filter_days_of_week?: number[]
-          p_filter_duration_buckets?: string[]
-          p_filter_months?: string[]
-          p_filter_providers?: string[]
-          p_filter_time_slots?: string[]
-          p_filter_vehicle_types?: string[]
-          p_metric: string
-        }
-        Returns: {
-          dimension: string
-          value: number
-        }[]
-      }
+      get_trip_aggregation:
+        | {
+            Args: {
+              p_dimension: string
+              p_filter_days_of_week?: number[]
+              p_filter_duration_buckets?: string[]
+              p_filter_months?: string[]
+              p_filter_providers?: string[]
+              p_filter_time_slots?: string[]
+              p_filter_vehicle_types?: string[]
+              p_metric: string
+            }
+            Returns: {
+              dimension: string
+              value: number
+            }[]
+          }
+        | {
+            Args: {
+              p_dimension: string
+              p_filter_days_of_week?: number[]
+              p_filter_duration_buckets?: string[]
+              p_filter_incentive_ids?: string[]
+              p_filter_months?: string[]
+              p_filter_providers?: string[]
+              p_filter_time_slots?: string[]
+              p_filter_vehicle_types?: string[]
+              p_metric: string
+            }
+            Returns: {
+              dimension: string
+              value: number
+            }[]
+          }
     }
     Enums: {
       [_ in never]: never
