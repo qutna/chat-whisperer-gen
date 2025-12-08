@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function TripsPage() {
   const [filters, setFilters] = useState<TripFilters>({
+    incentiveIds: [],
     months: [],
     providers: [],
     vehicleTypes: [],

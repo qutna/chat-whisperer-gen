@@ -34,6 +34,7 @@ export function GraphView({ filters, dimension, metric }: GraphViewProps) {
           p_filter_days_of_week: filters.daysOfWeek.length > 0 ? filters.daysOfWeek : null,
           p_filter_time_slots: filters.timeSlots.length > 0 ? filters.timeSlots : null,
           p_filter_duration_buckets: filters.durationBuckets.length > 0 ? filters.durationBuckets : null,
+          p_filter_incentive_ids: filters.incentiveIds.length > 0 ? filters.incentiveIds : null,
         });
 
         if (error) throw error;

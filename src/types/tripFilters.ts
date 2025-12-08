@@ -1,10 +1,33 @@
 export interface TripFilters {
+  incentiveIds: string[];
   months: string[];
   providers: string[];
   vehicleTypes: string[];
   daysOfWeek: number[];
   timeSlots: string[];
   durationBuckets: string[];
+}
+
+export interface Incentive {
+  id: string;
+  numeric_id: number;
+  brief_name: string;
+  name: string;
+  description: string | null;
+  vehicle_types: string[] | null;
+  propulsion_types: string[] | null;
+  business_model: string | null;
+  providers: string[] | null;
+  days_of_week: number[] | null;
+  time_start: string | null;
+  time_end: string | null;
+  start_location_description: string | null;
+  end_location_description: string | null;
+  amount: number;
+  valid_from: string;
+  valid_to: string;
+  status: string;
+  created_at: string;
 }
 
 export const DAYS_OF_WEEK = [

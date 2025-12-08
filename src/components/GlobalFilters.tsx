@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
-import { TripFilters, DAYS_OF_WEEK, DURATION_BUCKETS, TIME_SLOTS } from "@/types/tripFilters";
+import { TripFilters, Incentive, DAYS_OF_WEEK, DURATION_BUCKETS, TIME_SLOTS } from "@/types/tripFilters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -12,6 +12,7 @@ interface GlobalFiltersProps {
 }
 
 export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) {
+  const [availableIncentives, setAvailableIncentives] = useState<Pick<Incentive, 'id' | 'numeric_id' | 'brief_name'>[]>([]);
   const [availableMonths, setAvailableMonths] = useState<string[]>([]);
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [availableVehicleTypes, setAvailableVehicleTypes] = useState<string[]>([]);
@@ -20,6 +21,18 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
+        // Fetch incentives
+        const { data: incentiveData, error: incentiveError } = await supabase
+          .from('incentives')
+          .select('id, numeric_id, brief_name')
+          .order('numeric_id');
+
+        if (incentiveError) {
+          console.error('Error fetching incentives:', incentiveError);
+        } else {
+          setAvailableIncentives(incentiveData || []);
+        }
+
         // Fetch unique months using aggregation
         const { data: monthData, error: monthError } = await supabase
           .rpc('get_trip_aggregation', {
@@ -60,10 +73,10 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
         const vehicleTypes = vehicleData?.map(d => d.dimension).filter(Boolean).sort() || [];
 
         console.log('Filter options loaded:', {
+          incentives: incentiveData?.length || 0,
           months: months.length,
           providers: providers.length,
-          vehicleTypes: vehicleTypes.length,
-          providersList: providers
+          vehicleTypes: vehicleTypes.length
         });
 
         setAvailableMonths(months);
@@ -113,6 +126,45 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
       </CardHeader>
       <CardContent>
         <Accordion type="multiple" className="w-full">
+          {/* Incentives - TOP FILTER */}
+          <AccordionItem value="incentives">
+            <AccordionTrigger className="text-sm font-semibold">Incentives</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {/* No Incentive option */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="incentive-none"
+                    checked={filters.incentiveIds.includes('none')}
+                    onCheckedChange={() => toggleFilter('incentiveIds', 'none')}
+                  />
+                  <label
+                    htmlFor="incentive-none"
+                    className="text-sm cursor-pointer truncate flex-1 italic text-muted-foreground"
+                  >
+                    No Incentive
+                  </label>
+                </div>
+                {/* Incentive options */}
+                {availableIncentives.map(incentive => (
+                  <div key={incentive.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`incentive-${incentive.id}`}
+                      checked={filters.incentiveIds.includes(incentive.id)}
+                      onCheckedChange={() => toggleFilter('incentiveIds', incentive.id)}
+                    />
+                    <label
+                      htmlFor={`incentive-${incentive.id}`}
+                      className="text-sm cursor-pointer truncate flex-1"
+                    >
+                      {incentive.numeric_id} - {incentive.brief_name}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
           {/* Months */}
           <AccordionItem value="months">
             <AccordionTrigger className="text-sm font-semibold">Months</AccordionTrigger>
