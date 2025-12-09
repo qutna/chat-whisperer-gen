@@ -1,6 +1,22 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { GlobalFilters } from "@/components/GlobalFilters";
+import { ModeShiftSankey } from "@/components/ModeShiftSankey";
+import { useModeShifts } from "@/hooks/useModeShifts";
+import { TripFilters } from "@/types/tripFilters";
 
 export default function ImpactsPage() {
+  const [filters, setFilters] = useState<TripFilters>({
+    incentiveIds: [],
+    months: [],
+    providers: [],
+    vehicleTypes: [],
+    daysOfWeek: [],
+    timeSlots: [],
+    durationBuckets: [],
+  });
+
+  const { data: sankeyData, isLoading } = useModeShifts(filters);
+
   return (
     <div className="space-y-6">
       <div>
@@ -10,20 +26,16 @@ export default function ImpactsPage() {
         </p>
       </div>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Impact Metrics</CardTitle>
-            <CardDescription>
-              Environmental and social benefits delivered by mobility services
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Impact tracking dashboard will be implemented here
-            </p>
-          </CardContent>
-        </Card>
+      <div className="flex gap-6">
+        {/* Filters Sidebar */}
+        <div className="w-80 shrink-0">
+          <GlobalFilters filters={filters} onFiltersChange={setFilters} />
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 space-y-6">
+          <ModeShiftSankey data={sankeyData} isLoading={isLoading} />
+        </div>
       </div>
     </div>
   );
