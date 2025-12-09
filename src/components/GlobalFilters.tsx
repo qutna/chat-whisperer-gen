@@ -213,9 +213,8 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
             </AccordionContent>
           </AccordionItem>
 
-          {/* Bike Types */}
           <AccordionItem value="bike-types">
-            <AccordionTrigger className="text-sm font-semibold">Bike Type</AccordionTrigger>
+            <AccordionTrigger className="text-sm font-semibold">Vehicle Type</AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {availableBikeTypes.map(type => (
