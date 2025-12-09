@@ -9,8 +9,10 @@ interface ModeShiftData {
   extrapolated_count: number;
 }
 
-interface SankeyNode {
+export interface SankeyNode {
   name: string;
+  value?: number;
+  percentage?: number;
 }
 
 interface SankeyLink {
@@ -22,6 +24,7 @@ interface SankeyLink {
 export interface SankeyData {
   nodes: SankeyNode[];
   links: SankeyLink[];
+  totalTrips: number;
 }
 
 const MODE_LABELS: Record<string, string> = {
@@ -31,10 +34,10 @@ const MODE_LABELS: Record<string, string> = {
   scooter_moped: "Scooter / Moped",
   cycling: "Cycling",
   walking: "Walking",
-  new_trip: "New Trip",
+  new_trip: "* New Trip",
 };
 
-const SOURCE_ORDER = ["car", "bus", "rail", "scooter_moped", "cycling", "walking", "new_trip"];
+const SOURCE_MODES = ["car", "bus", "rail", "scooter_moped", "cycling", "walking", "new_trip"];
 
 export function useModeShifts(filters: TripFilters) {
   return useQuery({
@@ -55,19 +58,49 @@ export function useModeShifts(filters: TripFilters) {
         throw error;
       }
 
-      // Build nodes: 7 sources + 2 targets
+      const modeShiftData = (data || []) as ModeShiftData[];
+
+      // Calculate totals per source mode
+      const modeTotals: Record<string, number> = {};
+      modeShiftData.forEach((row) => {
+        const value = Math.round(row.extrapolated_count);
+        modeTotals[row.previous_mode] = (modeTotals[row.previous_mode] || 0) + value;
+      });
+
+      // Calculate total trips (sum of all extrapolated counts)
+      const totalTrips = Object.values(modeTotals).reduce((sum, val) => sum + val, 0);
+
+      // Sort source modes by count (largest to smallest), but keep new_trip always last
+      const sortedModes = SOURCE_MODES
+        .filter((mode) => mode !== "new_trip")
+        .sort((a, b) => (modeTotals[b] || 0) - (modeTotals[a] || 0));
+      sortedModes.push("new_trip"); // Always at the bottom
+
+      // Build nodes: sorted sources + 2 targets
       const nodes: SankeyNode[] = [
-        ...SOURCE_ORDER.map((mode) => ({ name: MODE_LABELS[mode] })),
-        { name: "P-Bike" },
-        { name: "E-Bike" },
+        ...sortedModes.map((mode) => ({
+          name: MODE_LABELS[mode],
+          value: modeTotals[mode] || 0,
+          percentage: totalTrips > 0 ? ((modeTotals[mode] || 0) / totalTrips) * 100 : 0,
+        })),
+        { name: "P-Bike", value: 0, percentage: 0 },
+        { name: "E-Bike", value: 0, percentage: 0 },
       ];
+
+      // Calculate target totals
+      modeShiftData.forEach((row) => {
+        const value = Math.round(row.extrapolated_count);
+        const targetNode = row.bike_type === "P-Bike" ? nodes[7] : nodes[8];
+        targetNode.value = (targetNode.value || 0) + value;
+      });
+      nodes[7].percentage = totalTrips > 0 ? ((nodes[7].value || 0) / totalTrips) * 100 : 0;
+      nodes[8].percentage = totalTrips > 0 ? ((nodes[8].value || 0) / totalTrips) * 100 : 0;
 
       // Build links from the data
       const links: SankeyLink[] = [];
-      const modeShiftData = (data || []) as ModeShiftData[];
 
       modeShiftData.forEach((row) => {
-        const sourceIndex = SOURCE_ORDER.indexOf(row.previous_mode);
+        const sourceIndex = sortedModes.indexOf(row.previous_mode);
         if (sourceIndex === -1) return;
 
         const targetIndex = row.bike_type === "P-Bike" ? 7 : 8;
@@ -82,7 +115,7 @@ export function useModeShifts(filters: TripFilters) {
         }
       });
 
-      return { nodes, links };
+      return { nodes, links, totalTrips };
     },
   });
 }
