@@ -145,17 +145,8 @@ export function ModeShiftSankey({ data, isLoading }: ModeShiftSankeyProps) {
               width={800}
               height={500}
               data={data}
-              node={<CustomNode x={0} y={0} width={0} height={0} index={0} payload={{ name: "", value: 0 }} />}
-              link={<CustomLink 
-                sourceX={0} 
-                targetX={0} 
-                sourceY={0} 
-                targetY={0} 
-                sourceControlX={0} 
-                targetControlX={0} 
-                linkWidth={0} 
-                payload={{ source: { name: "" }, target: { name: "" }, value: 0 }} 
-              />}
+              node={(props) => <CustomNode {...props} />}
+              link={(props) => <CustomLink {...props} />}
               nodePadding={40}
               nodeWidth={12}
               margin={{ top: 20, right: 120, bottom: 20, left: 120 }}
