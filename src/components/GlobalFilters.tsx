@@ -15,7 +15,7 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
   const [availableIncentives, setAvailableIncentives] = useState<Pick<Incentive, 'id' | 'numeric_id' | 'brief_name'>[]>([]);
   const [availableMonths, setAvailableMonths] = useState<string[]>([]);
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
-  const [availableVehicleTypes, setAvailableVehicleTypes] = useState<string[]>([]);
+  const [availableBikeTypes, setAvailableBikeTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,29 +59,29 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
 
         const providers = providerData?.map(d => d.dimension).filter(Boolean).sort() || [];
 
-        // Fetch unique vehicle types using aggregation
-        const { data: vehicleData, error: vehicleError } = await supabase
+        // Fetch unique bike types using aggregation
+        const { data: bikeTypeData, error: bikeTypeError } = await supabase
           .rpc('get_trip_aggregation', {
-            p_dimension: 'vehicle_type',
+            p_dimension: 'bike_type',
             p_metric: 'count'
           });
 
-        if (vehicleError) {
-          console.error('Error fetching vehicle types:', vehicleError);
+        if (bikeTypeError) {
+          console.error('Error fetching bike types:', bikeTypeError);
         }
 
-        const vehicleTypes = vehicleData?.map(d => d.dimension).filter(Boolean).sort() || [];
+        const bikeTypes = bikeTypeData?.map(d => d.dimension).filter(Boolean).sort() || [];
 
         console.log('Filter options loaded:', {
           incentives: incentiveData?.length || 0,
           months: months.length,
           providers: providers.length,
-          vehicleTypes: vehicleTypes.length
+          bikeTypes: bikeTypes.length
         });
 
         setAvailableMonths(months);
         setAvailableProviders(providers);
-        setAvailableVehicleTypes(vehicleTypes);
+        setAvailableBikeTypes(bikeTypes);
       } catch (error) {
         console.error('Error fetching filter options:', error);
       } finally {
@@ -213,20 +213,20 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
             </AccordionContent>
           </AccordionItem>
 
-          {/* Vehicle Types */}
-          <AccordionItem value="vehicle-types">
-            <AccordionTrigger className="text-sm font-semibold">Vehicle Types</AccordionTrigger>
+          {/* Bike Types */}
+          <AccordionItem value="bike-types">
+            <AccordionTrigger className="text-sm font-semibold">Bike Type</AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {availableVehicleTypes.map(type => (
+                {availableBikeTypes.map(type => (
                   <div key={type} className="flex items-center space-x-2">
                     <Checkbox
-                      id={`vehicle-${type}`}
+                      id={`bike-${type}`}
                       checked={filters.vehicleTypes.includes(type)}
                       onCheckedChange={() => toggleFilter('vehicleTypes', type)}
                     />
                     <label
-                      htmlFor={`vehicle-${type}`}
+                      htmlFor={`bike-${type}`}
                       className="text-sm cursor-pointer truncate flex-1"
                     >
                       {type}
