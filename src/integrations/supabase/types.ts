@@ -80,6 +80,38 @@ export type Database = {
         }
         Relationships: []
       }
+      trip_surveys: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_mock_data: boolean | null
+          previous_mode: string
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_mock_data?: boolean | null
+          previous_mode: string
+          trip_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_mock_data?: boolean | null
+          previous_mode?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_surveys_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: true
+            referencedRelation: "trips"
+            referencedColumns: ["trip_id"]
+          },
+        ]
+      }
       trips: {
         Row: {
           accuracy: number
@@ -159,6 +191,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_mode_shift_data: {
+        Args: {
+          p_filter_days_of_week?: number[]
+          p_filter_duration_buckets?: string[]
+          p_filter_incentive_ids?: string[]
+          p_filter_months?: string[]
+          p_filter_providers?: string[]
+          p_filter_time_slots?: string[]
+          p_filter_vehicle_types?: string[]
+        }
+        Returns: {
+          bike_type: string
+          extrapolated_count: number
+          previous_mode: string
+          surveyed_count: number
+        }[]
+      }
       get_trip_aggregation:
         | {
             Args: {
