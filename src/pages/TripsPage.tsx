@@ -62,7 +62,7 @@ export default function TripsPage() {
                   <SelectContent>
                     <SelectItem value="month">Month</SelectItem>
                     <SelectItem value="provider_name">Operator</SelectItem>
-                    <SelectItem value="vehicle_type">Vehicle Type</SelectItem>
+                    <SelectItem value="bike_type">Bike Type</SelectItem>
                     <SelectItem value="day_of_week">Day of Week</SelectItem>
                     <SelectItem value="time_of_day">Time of Day</SelectItem>
                     <SelectItem value="duration_bucket">Trip Duration</SelectItem>

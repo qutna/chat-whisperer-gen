@@ -60,6 +60,7 @@ export function GraphView({ filters, dimension, metric }: GraphViewProps) {
     switch (dimension) {
       case "month": return "Month";
       case "provider_name": return "Operator";
+      case "bike_type": return "Bike Type";
       case "vehicle_type": return "Vehicle Type";
       case "day_of_week": return "Day of Week";
       case "time_of_day": return "Time of Day";
