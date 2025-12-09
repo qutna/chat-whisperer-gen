@@ -16,7 +16,7 @@ const NODE_COLORS: Record<string, string> = {
   "Scooter / Moped": "hsl(25, 95%, 53%)", // Orange
   "Cycling": "hsl(48, 96%, 53%)",        // Yellow - active mode
   "Walking": "hsl(45, 93%, 47%)",        // Gold - active mode
-  "New Trip": "hsl(220, 9%, 46%)",       // Gray - induced demand
+  "* New Trip": "hsl(220, 9%, 46%)",     // Gray - induced demand
   "P-Bike": "hsl(173, 80%, 40%)",        // Teal
   "E-Bike": "hsl(187, 85%, 43%)",        // Cyan
 };
@@ -30,6 +30,7 @@ interface CustomNodeProps {
   payload: {
     name: string;
     value: number;
+    percentage?: number;
   };
 }
 
@@ -65,7 +66,7 @@ const CustomNode = ({ x, y, width, height, payload }: CustomNodeProps) => {
         dominantBaseline="middle"
         className="fill-muted-foreground text-xs"
       >
-        {payload.value?.toLocaleString() || 0}
+        {payload.value?.toLocaleString() || 0} ({payload.percentage?.toFixed(1) || 0}%)
       </text>
     </Layer>
   );
