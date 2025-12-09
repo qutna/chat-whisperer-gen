@@ -31,23 +31,16 @@ Deno.serve(async (req) => {
 
     console.log("Starting trip-to-incentive linking...");
 
-    // First, reset all incentive_ids to allow re-matching
+    // First, reset all incentive_ids
     console.log("Resetting all incentive_ids...");
-    
-    // Reset in batches to avoid timeout
     let resetCount = 0;
     let hasMoreToReset = true;
     while (hasMoreToReset) {
-      const { data: toReset, error: fetchError } = await supabase
+      const { data: toReset } = await supabase
         .from("trips")
         .select("trip_id")
         .not("incentive_id", "is", null)
-        .limit(5000);
-      
-      if (fetchError) {
-        console.error("Fetch for reset error:", fetchError.message);
-        break;
-      }
+        .limit(500);
       
       if (!toReset || toReset.length === 0) {
         hasMoreToReset = false;
@@ -55,17 +48,8 @@ Deno.serve(async (req) => {
       }
       
       const ids = toReset.map((t: any) => t.trip_id);
-      const { error: resetError } = await supabase
-        .from("trips")
-        .update({ incentive_id: null })
-        .in("trip_id", ids);
-      
-      if (resetError) {
-        console.error("Reset error:", resetError.message);
-        break;
-      }
+      await supabase.from("trips").update({ incentive_id: null }).in("trip_id", ids);
       resetCount += ids.length;
-      console.log(`Reset ${resetCount} trips so far...`);
     }
     console.log(`Reset complete: ${resetCount} trips`);
 
@@ -75,27 +59,17 @@ Deno.serve(async (req) => {
       .select("*")
       .order("numeric_id", { ascending: true });
 
-    if (incentivesError) {
-      throw new Error(`Failed to fetch incentives: ${incentivesError.message}`);
-    }
+    if (incentivesError) throw new Error(`Failed to fetch incentives: ${incentivesError.message}`);
 
-    console.log(`Found ${incentives?.length || 0} incentives`);
-
-    // Sort incentives by specificity (most criteria = more specific = higher priority)
-    const sortedIncentives = (incentives as Incentive[]).sort((a, b) => {
-      const scoreA = getSpecificityScore(a);
-      const scoreB = getSpecificityScore(b);
-      return scoreB - scoreA; // Most specific first
-    });
-
-    console.log("Processing incentives by specificity...");
+    // Sort by specificity
+    const sortedIncentives = (incentives as Incentive[]).sort((a, b) => 
+      getSpecificityScore(b) - getSpecificityScore(a)
+    );
 
     let totalLinked = 0;
     const results: Record<string, number> = {};
 
-    // Process each incentive
     for (const incentive of sortedIncentives) {
-      // Skip location-based incentives (non-"Any" descriptions)
       if (
         (incentive.start_location_description && incentive.start_location_description !== "Any") ||
         (incentive.end_location_description && incentive.end_location_description !== "Any")
@@ -104,22 +78,16 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Build the matching query with pagination
-      const matchingResult = await findAndLinkMatchingTrips(supabase, incentive);
-      
-      results[incentive.brief_name] = matchingResult.count;
-      totalLinked += matchingResult.count;
-      console.log(`Linked ${matchingResult.count} trips to ${incentive.brief_name}`);
+      const count = await linkTripsToIncentive(supabase, incentive);
+      results[incentive.brief_name] = count;
+      totalLinked += count;
+      console.log(`Linked ${count} trips to ${incentive.brief_name}`);
     }
 
     console.log(`Completed! Total trips linked: ${totalLinked}`);
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        totalLinked,
-        results,
-      }),
+      JSON.stringify({ success: true, totalLinked, results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
@@ -133,137 +101,100 @@ Deno.serve(async (req) => {
 
 function getSpecificityScore(incentive: Incentive): number {
   let score = 0;
-  if (incentive.vehicle_types && incentive.vehicle_types.length > 0) score += 1;
-  if (incentive.propulsion_types && incentive.propulsion_types.length > 0) score += 2;
-  if (incentive.providers && incentive.providers.length > 0) score += 1;
-  if (incentive.days_of_week && incentive.days_of_week.length > 0 && incentive.days_of_week.length < 7) score += 2;
+  if (incentive.vehicle_types?.length) score += 1;
+  if (incentive.propulsion_types?.length) score += 2;
+  if (incentive.providers?.length) score += 1;
+  if (incentive.days_of_week?.length && incentive.days_of_week.length < 7) score += 2;
   if (incentive.time_start || incentive.time_end) score += 2;
   return score;
 }
 
-async function findAndLinkMatchingTrips(supabase: any, incentive: Incentive) {
+async function linkTripsToIncentive(supabase: any, incentive: Incentive) {
   let totalUpdated = 0;
-  let hasMore = true;
   let iterations = 0;
-  const maxIterations = 100; // Safety limit
+  const maxIterations = 500;
+  const fetchBatchSize = 1000;
+  const updateBatchSize = 200;
 
-  while (hasMore && iterations < maxIterations) {
+  while (iterations < maxIterations) {
     iterations++;
     
-    // Build a select query to find matching trip IDs
+    // Fetch unlinked trips
     let query = supabase
       .from("trips")
-      .select("trip_id, vehicle_type, propulsion_types, provider_name, start_time")
+      .select("trip_id, propulsion_types, start_time")
       .is("incentive_id", null)
-      .limit(5000);
+      .limit(fetchBatchSize);
 
-    // Vehicle type filter
-    if (incentive.vehicle_types && incentive.vehicle_types.length > 0) {
-      query = query.in("vehicle_type", incentive.vehicle_types);
-    }
-
-    // Provider filter
-    if (incentive.providers && incentive.providers.length > 0) {
-      query = query.in("provider_name", incentive.providers);
-    }
+    if (incentive.vehicle_types?.length) query = query.in("vehicle_type", incentive.vehicle_types);
+    if (incentive.providers?.length) query = query.in("provider_name", incentive.providers);
 
     const { data: trips, error } = await query;
-
     if (error) {
-      console.error(`Query error for ${incentive.brief_name}: ${error.message}`);
+      console.error(`Query error: ${error.message}`);
       break;
     }
+    if (!trips || trips.length === 0) break;
 
-    if (!trips || trips.length === 0) {
-      hasMore = false;
-      break;
+    // Filter in JS for complex criteria
+    let filtered = trips;
+
+    if (incentive.propulsion_types?.length) {
+      filtered = filtered.filter((t: any) => 
+        t.propulsion_types?.some((pt: string) => incentive.propulsion_types!.includes(pt))
+      );
     }
 
-    // Filter by propulsion types, days of week, time window in JS
-    let filteredTrips = trips;
-
-    // Filter by propulsion types if specified
-    if (incentive.propulsion_types && incentive.propulsion_types.length > 0) {
-      filteredTrips = filteredTrips.filter((trip: any) => {
-        if (!trip.propulsion_types || trip.propulsion_types.length === 0) return false;
-        return incentive.propulsion_types!.some(pt => trip.propulsion_types.includes(pt));
+    if (incentive.days_of_week?.length && incentive.days_of_week.length < 7) {
+      filtered = filtered.filter((t: any) => {
+        const day = new Date(t.start_time).getUTCDay();
+        return incentive.days_of_week!.includes(day);
       });
     }
 
-    // Filter by days of week if specified (only if not all days)
-    if (incentive.days_of_week && incentive.days_of_week.length > 0 && incentive.days_of_week.length < 7) {
-      filteredTrips = filteredTrips.filter((trip: any) => {
-        const tripDate = new Date(trip.start_time);
-        const dayOfWeek = tripDate.getUTCDay();
-        return incentive.days_of_week!.includes(dayOfWeek);
-      });
-    }
-
-    // Filter by time window if specified
     if (incentive.time_start || incentive.time_end) {
-      filteredTrips = filteredTrips.filter((trip: any) => {
-        const tripDate = new Date(trip.start_time);
-        const tripHour = tripDate.getUTCHours();
-        const tripMinute = tripDate.getUTCMinutes();
-        const tripTimeMinutes = tripHour * 60 + tripMinute;
-
-        let startMinutes = 0;
-        let endMinutes = 24 * 60;
-
-        if (incentive.time_start) {
-          const parts = incentive.time_start.split(":");
-          startMinutes = parseInt(parts[0]) * 60 + (parseInt(parts[1]) || 0);
-        }
-        if (incentive.time_end) {
-          const parts = incentive.time_end.split(":");
-          endMinutes = parseInt(parts[0]) * 60 + (parseInt(parts[1]) || 0);
-        }
-
-        return tripTimeMinutes >= startMinutes && tripTimeMinutes < endMinutes;
+      filtered = filtered.filter((t: any) => {
+        const d = new Date(t.start_time);
+        const mins = d.getUTCHours() * 60 + d.getUTCMinutes();
+        const start = incentive.time_start ? parseTime(incentive.time_start) : 0;
+        const end = incentive.time_end ? parseTime(incentive.time_end) : 1440;
+        return mins >= start && mins < end;
       });
     }
 
-    // If no trips match after filtering, check if we should continue
-    if (filteredTrips.length === 0) {
-      // If we had trips but none matched filters, we should break to avoid infinite loop
-      // (only for specific incentives - the catch-all should match everything)
-      const hasFilters = (incentive.propulsion_types && incentive.propulsion_types.length > 0) ||
-                         (incentive.days_of_week && incentive.days_of_week.length > 0 && incentive.days_of_week.length < 7) ||
-                         incentive.time_start || incentive.time_end;
-      if (hasFilters) {
-        hasMore = false;
+    if (filtered.length === 0) {
+      // If filters are too specific and nothing matches, stop
+      if (incentive.propulsion_types?.length || 
+          (incentive.days_of_week?.length && incentive.days_of_week.length < 7) ||
+          incentive.time_start || incentive.time_end) {
+        break;
       }
       continue;
     }
 
-    // Update matching trips
-    const tripIds = filteredTrips.map((t: any) => t.trip_id);
-    
-    const { error: updateError } = await supabase
-      .from("trips")
-      .update({ incentive_id: incentive.id })
-      .in("trip_id", tripIds);
-
-    if (updateError) {
-      console.error(`Update error for ${incentive.brief_name}: ${updateError.message}`);
-      // Try smaller batches
-      for (let i = 0; i < tripIds.length; i += 500) {
-        const batch = tripIds.slice(i, i + 500);
-        await supabase
-          .from("trips")
-          .update({ incentive_id: incentive.id })
-          .in("trip_id", batch);
+    // Update in small batches
+    const ids = filtered.map((t: any) => t.trip_id);
+    for (let i = 0; i < ids.length; i += updateBatchSize) {
+      const batch = ids.slice(i, i + updateBatchSize);
+      const { error: updateError } = await supabase
+        .from("trips")
+        .update({ incentive_id: incentive.id })
+        .in("trip_id", batch);
+      
+      if (updateError) {
+        console.error(`Update error: ${updateError.message}`);
+      } else {
+        totalUpdated += batch.length;
       }
-      totalUpdated += tripIds.length;
-    } else {
-      totalUpdated += tripIds.length;
     }
 
-    // If we processed all fetched trips, there might be more
-    if (trips.length < 5000) {
-      hasMore = false;
-    }
+    if (trips.length < fetchBatchSize) break;
   }
 
-  return { count: totalUpdated };
+  return totalUpdated;
+}
+
+function parseTime(timeStr: string): number {
+  const parts = timeStr.split(":");
+  return parseInt(parts[0]) * 60 + (parseInt(parts[1]) || 0);
 }
