@@ -39,76 +39,6 @@ const getDistanceColor = (avgDistance: number): string => {
   return '#ef4444'; // red
 };
 
-// Convert trip duration (seconds) to duration bucket
-const getDurationBucket = (durationSeconds: number): string => {
-  const minutes = durationSeconds / 60;
-  if (minutes < 10) return '1-10min';
-  if (minutes < 20) return '10-20min';
-  if (minutes < 30) return '20-30min';
-  if (minutes < 60) return '30-60min';
-  return '60+min';
-};
-
-// Haversine distance calculation (returns meters)
-const haversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-  const R = 6371000; // Earth's radius in meters
-  const toRad = (deg: number) => deg * Math.PI / 180;
-  
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-            Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
-
-// Aggregate trips client-side
-const aggregateTrips = (
-  trips: Array<{ start_location: { type: string; coordinates: [number, number] }; end_location: { type: string; coordinates: [number, number] }; trip_distance: number }>,
-  gridSizeDeg: number
-): TripRoute[] => {
-  const aggregated = new Map<string, { count: number; totalDistance: number; startLng: number; startLat: number; endLng: number; endLat: number }>();
-
-  trips.forEach((trip) => {
-    const startLng = Math.round(trip.start_location.coordinates[0] / gridSizeDeg) * gridSizeDeg;
-    const startLat = Math.round(trip.start_location.coordinates[1] / gridSizeDeg) * gridSizeDeg;
-    const endLng = Math.round(trip.end_location.coordinates[0] / gridSizeDeg) * gridSizeDeg;
-    const endLat = Math.round(trip.end_location.coordinates[1] / gridSizeDeg) * gridSizeDeg;
-    
-    const key = `${startLng},${startLat},${endLng},${endLat}`;
-    
-    const existing = aggregated.get(key);
-    if (existing) {
-      existing.count++;
-      existing.totalDistance += trip.trip_distance;
-    } else {
-      aggregated.set(key, {
-        count: 1,
-        totalDistance: trip.trip_distance,
-        startLng,
-        startLat,
-        endLng,
-        endLat,
-      });
-    }
-  });
-
-  return Array.from(aggregated.values())
-    .map((item) => ({
-      start_lng: item.startLng,
-      start_lat: item.startLat,
-      end_lng: item.endLng,
-      end_lat: item.endLat,
-      trip_count: item.count,
-      avg_distance: item.totalDistance / item.count,
-    }))
-    .sort((a, b) => b.trip_count - a.trip_count)
-    .slice(0, 2000);
-};
-
 export function MapView({ filters }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -130,26 +60,28 @@ export function MapView({ filters }: MapViewProps) {
     const gridSizeDeg = (metersPerPixel * 40) / 111320.0;
 
     try {
-      // Build query with filters
-      let query = supabase
-        .from('trips')
-        .select('start_location, end_location, trip_distance, start_time, trip_duration')
-        .gte('trip_duration', 60);
-
-      // Apply viewport bounds filter - we need to filter client-side since jsonb
-      // Note: For performance, we're limiting to 10000 trips max
-      
-      if (filters.months.length > 0) {
-        // We'll filter months client-side since it requires date formatting
-      }
-      if (filters.providers.length > 0) {
-        query = query.in('provider_name', filters.providers);
-      }
-      if (filters.vehicleTypes.length > 0) {
-        query = query.in('vehicle_type', filters.vehicleTypes);
-      }
-
-      const { data, error } = await query.limit(50000);
+      // Use the secure aggregated routes function
+      const { data, error } = await supabase.rpc('get_aggregated_routes', {
+        p_min_lng: bounds.getWest(),
+        p_max_lng: bounds.getEast(),
+        p_min_lat: bounds.getSouth(),
+        p_max_lat: bounds.getNorth(),
+        p_grid_size_deg: gridSizeDeg,
+        p_filter_months: filters.months.length > 0 ? filters.months : null,
+        p_filter_providers: filters.providers.length > 0 ? filters.providers : null,
+        p_filter_vehicle_types: filters.vehicleTypes.length > 0 ? filters.vehicleTypes : null,
+        p_filter_days_of_week: filters.daysOfWeek.length > 0 ? filters.daysOfWeek : null,
+        p_filter_time_slots: filters.timeSlots.length > 0 ? filters.timeSlots : null,
+        p_filter_duration_buckets: filters.durationBuckets.length > 0 ? filters.durationBuckets : null,
+        p_filter_incentive_ids: filters.incentiveIds.length > 0 ? filters.incentiveIds : null,
+        p_start_lat: filters.startLocationFilter?.lat ?? null,
+        p_start_lng: filters.startLocationFilter?.lng ?? null,
+        p_start_radius_meters: filters.startLocationFilter?.radiusMeters ?? null,
+        p_end_lat: filters.endLocationFilter?.lat ?? null,
+        p_end_lng: filters.endLocationFilter?.lng ?? null,
+        p_end_radius_meters: filters.endLocationFilter?.radiusMeters ?? null,
+        p_min_trips: 5,
+      });
 
       if (error) {
         console.error('Error loading routes:', error);
@@ -157,84 +89,17 @@ export function MapView({ filters }: MapViewProps) {
         return;
       }
 
-      // Filter by viewport bounds and other filters client-side
-      let filteredTrips = (data || []).filter((trip) => {
-        const startLocation = trip.start_location as { type: string; coordinates: [number, number] };
-        const endLocation = trip.end_location as { type: string; coordinates: [number, number] };
-        
-        const startLng = startLocation?.coordinates?.[0];
-        const startLat = startLocation?.coordinates?.[1];
-        const endLng = endLocation?.coordinates?.[0];
-        const endLat = endLocation?.coordinates?.[1];
-        
-        if (!startLng || !startLat) return false;
-        
-        // Viewport filter
-        const inBounds = 
-          startLng >= bounds.getWest() &&
-          startLng <= bounds.getEast() &&
-          startLat >= bounds.getSouth() &&
-          startLat <= bounds.getNorth();
-        
-        if (!inBounds) return false;
-
-        // Months filter
-        if (filters.months.length > 0) {
-          const tripMonth = format(new Date(trip.start_time), 'yyyy-MM');
-          if (!filters.months.includes(tripMonth)) return false;
-        }
-
-        // Days of week filter
-        if (filters.daysOfWeek.length > 0) {
-          const tripDayOfWeek = new Date(trip.start_time).getDay();
-          if (!filters.daysOfWeek.includes(tripDayOfWeek)) return false;
-        }
-
-        // Time slots filter
-        if (filters.timeSlots.length > 0) {
-          const tripHour = format(new Date(trip.start_time), 'HH:00');
-          if (!filters.timeSlots.includes(tripHour)) return false;
-        }
-
-        // Duration buckets filter
-        if (filters.durationBuckets.length > 0) {
-          const bucket = getDurationBucket(trip.trip_duration);
-          if (!filters.durationBuckets.includes(bucket)) return false;
-        }
-
-        // Start location radius filter
-        if (filters.startLocationFilter) {
-          const distance = haversineDistance(
-            filters.startLocationFilter.lat, filters.startLocationFilter.lng,
-            startLat, startLng
-          );
-          if (distance > filters.startLocationFilter.radiusMeters) return false;
-        }
-
-        // End location radius filter
-        if (filters.endLocationFilter && endLat && endLng) {
-          const distance = haversineDistance(
-            filters.endLocationFilter.lat, filters.endLocationFilter.lng,
-            endLat, endLng
-          );
-          if (distance > filters.endLocationFilter.radiusMeters) return false;
-        }
-        
-        return true;
-      });
-
-      // Aggregate trips
-      const routes = aggregateTrips(
-        filteredTrips.map((t) => ({
-          start_location: t.start_location as { type: string; coordinates: [number, number] },
-          end_location: t.end_location as { type: string; coordinates: [number, number] },
-          trip_distance: t.trip_distance,
-        })),
-        gridSizeDeg
-      );
+      const routes: TripRoute[] = (data || []).map((row: any) => ({
+        start_lng: row.start_lng,
+        start_lat: row.start_lat,
+        end_lng: row.end_lng,
+        end_lat: row.end_lat,
+        trip_count: row.trip_count,
+        avg_distance: row.avg_distance,
+      }));
 
       setRouteCount(routes.length);
-      setTotalTrips(filteredTrips.length);
+      setTotalTrips(routes.reduce((sum, r) => sum + r.trip_count, 0));
 
       // Create GeoJSON features grouped by styling
       const featuresByStyle: Record<string, GeoJSON.Feature[]> = {};
@@ -377,7 +242,7 @@ export function MapView({ filters }: MapViewProps) {
       {/* Route count */}
       {!loading && (
         <div className="absolute top-4 left-4 bg-background/90 px-3 py-2 rounded-md text-sm">
-          {routeCount.toLocaleString()} routes ({totalTrips.toLocaleString()} trips)
+          {routeCount.toLocaleString()} routes ({totalTrips.toLocaleString()} trips, min 5 per route)
         </div>
       )}
 
@@ -389,7 +254,7 @@ export function MapView({ filters }: MapViewProps) {
           <div className="text-muted-foreground">Line Thickness (Trip Count)</div>
           <div className="flex items-center gap-2">
             <div className="w-8 h-[1px] bg-muted-foreground"></div>
-            <span>1-9</span>
+            <span>5-9</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-8 h-[3px] bg-muted-foreground"></div>
