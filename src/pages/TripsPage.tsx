@@ -16,6 +16,8 @@ export default function TripsPage() {
     daysOfWeek: [],
     timeSlots: [],
     durationBuckets: [],
+    startLocationFilter: null,
+    endLocationFilter: null,
   });
   
   const [dimension, setDimension] = useState("month");

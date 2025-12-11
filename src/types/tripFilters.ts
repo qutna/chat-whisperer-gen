@@ -1,3 +1,9 @@
+export interface LocationFilter {
+  lat: number;
+  lng: number;
+  radiusMeters: number;
+}
+
 export interface TripFilters {
   incentiveIds: string[];
   months: string[];
@@ -6,7 +12,17 @@ export interface TripFilters {
   daysOfWeek: number[];
   timeSlots: string[];
   durationBuckets: string[];
+  startLocationFilter: LocationFilter | null;
+  endLocationFilter: LocationFilter | null;
 }
+
+export const RADIUS_OPTIONS = [
+  { value: 250, label: '250m' },
+  { value: 500, label: '500m' },
+  { value: 1000, label: '1 km' },
+  { value: 2000, label: '2 km' },
+  { value: 5000, label: '5 km' },
+];
 
 export interface Incentive {
   id: string;

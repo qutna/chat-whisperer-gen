@@ -13,6 +13,8 @@ export default function ImpactsPage() {
     daysOfWeek: [],
     timeSlots: [],
     durationBuckets: [],
+    startLocationFilter: null,
+    endLocationFilter: null,
   });
 
   const { data: sankeyData, isLoading } = useModeShifts(filters);

@@ -191,40 +191,88 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_mode_shift_data: {
-        Args: {
-          p_filter_days_of_week?: number[]
-          p_filter_duration_buckets?: string[]
-          p_filter_incentive_ids?: string[]
-          p_filter_months?: string[]
-          p_filter_providers?: string[]
-          p_filter_time_slots?: string[]
-          p_filter_vehicle_types?: string[]
-        }
-        Returns: {
-          bike_type: string
-          extrapolated_count: number
-          previous_mode: string
-          surveyed_count: number
-        }[]
-      }
-      get_trip_aggregation: {
-        Args: {
-          p_dimension: string
-          p_filter_days_of_week?: number[]
-          p_filter_duration_buckets?: string[]
-          p_filter_incentive_ids?: string[]
-          p_filter_months?: string[]
-          p_filter_providers?: string[]
-          p_filter_time_slots?: string[]
-          p_filter_vehicle_types?: string[]
-          p_metric: string
-        }
-        Returns: {
-          dimension: string
-          value: number
-        }[]
-      }
+      get_mode_shift_data:
+        | {
+            Args: {
+              p_filter_days_of_week?: number[]
+              p_filter_duration_buckets?: string[]
+              p_filter_incentive_ids?: string[]
+              p_filter_months?: string[]
+              p_filter_providers?: string[]
+              p_filter_time_slots?: string[]
+              p_filter_vehicle_types?: string[]
+            }
+            Returns: {
+              bike_type: string
+              extrapolated_count: number
+              previous_mode: string
+              surveyed_count: number
+            }[]
+          }
+        | {
+            Args: {
+              p_end_lat?: number
+              p_end_lng?: number
+              p_end_radius_meters?: number
+              p_filter_days_of_week?: number[]
+              p_filter_duration_buckets?: string[]
+              p_filter_incentive_ids?: string[]
+              p_filter_months?: string[]
+              p_filter_providers?: string[]
+              p_filter_time_slots?: string[]
+              p_filter_vehicle_types?: string[]
+              p_start_lat?: number
+              p_start_lng?: number
+              p_start_radius_meters?: number
+            }
+            Returns: {
+              bike_type: string
+              extrapolated_count: number
+              previous_mode: string
+              surveyed_count: number
+            }[]
+          }
+      get_trip_aggregation:
+        | {
+            Args: {
+              p_dimension: string
+              p_filter_days_of_week?: number[]
+              p_filter_duration_buckets?: string[]
+              p_filter_incentive_ids?: string[]
+              p_filter_months?: string[]
+              p_filter_providers?: string[]
+              p_filter_time_slots?: string[]
+              p_filter_vehicle_types?: string[]
+              p_metric: string
+            }
+            Returns: {
+              dimension: string
+              value: number
+            }[]
+          }
+        | {
+            Args: {
+              p_dimension: string
+              p_end_lat?: number
+              p_end_lng?: number
+              p_end_radius_meters?: number
+              p_filter_days_of_week?: number[]
+              p_filter_duration_buckets?: string[]
+              p_filter_incentive_ids?: string[]
+              p_filter_months?: string[]
+              p_filter_providers?: string[]
+              p_filter_time_slots?: string[]
+              p_filter_vehicle_types?: string[]
+              p_metric: string
+              p_start_lat?: number
+              p_start_lng?: number
+              p_start_radius_meters?: number
+            }
+            Returns: {
+              dimension: string
+              value: number
+            }[]
+          }
     }
     Enums: {
       [_ in never]: never

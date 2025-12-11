@@ -49,6 +49,22 @@ const getDurationBucket = (durationSeconds: number): string => {
   return '60+min';
 };
 
+// Haversine distance calculation (returns meters)
+const haversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const R = 6371000; // Earth's radius in meters
+  const toRad = (deg: number) => deg * Math.PI / 180;
+  
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 // Aggregate trips client-side
 const aggregateTrips = (
   trips: Array<{ start_location: { type: string; coordinates: [number, number] }; end_location: { type: string; coordinates: [number, number] }; trip_distance: number }>,
@@ -148,6 +164,8 @@ export function MapView({ filters }: MapViewProps) {
         
         const startLng = startLocation?.coordinates?.[0];
         const startLat = startLocation?.coordinates?.[1];
+        const endLng = endLocation?.coordinates?.[0];
+        const endLat = endLocation?.coordinates?.[1];
         
         if (!startLng || !startLat) return false;
         
@@ -182,6 +200,24 @@ export function MapView({ filters }: MapViewProps) {
         if (filters.durationBuckets.length > 0) {
           const bucket = getDurationBucket(trip.trip_duration);
           if (!filters.durationBuckets.includes(bucket)) return false;
+        }
+
+        // Start location radius filter
+        if (filters.startLocationFilter) {
+          const distance = haversineDistance(
+            filters.startLocationFilter.lat, filters.startLocationFilter.lng,
+            startLat, startLng
+          );
+          if (distance > filters.startLocationFilter.radiusMeters) return false;
+        }
+
+        // End location radius filter
+        if (filters.endLocationFilter && endLat && endLng) {
+          const distance = haversineDistance(
+            filters.endLocationFilter.lat, filters.endLocationFilter.lng,
+            endLat, endLng
+          );
+          if (distance > filters.endLocationFilter.radiusMeters) return false;
         }
         
         return true;

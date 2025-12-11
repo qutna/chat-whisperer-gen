@@ -24,6 +24,18 @@ export function DownloadDataView({ filters }: DownloadDataViewProps) {
     return '60+min';
   };
 
+  const haversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371000;
+    const toRad = (deg: number) => deg * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
@@ -55,6 +67,13 @@ export function DownloadDataView({ filters }: DownloadDataViewProps) {
 
       // Apply client-side filters
       const filteredTrips = trips.filter(trip => {
+        const startCoords = (trip.start_location as any)?.coordinates || [null, null];
+        const endCoords = (trip.end_location as any)?.coordinates || [null, null];
+        const startLng = startCoords[0];
+        const startLat = startCoords[1];
+        const endLng = endCoords[0];
+        const endLat = endCoords[1];
+
         // Months filter
         if (filters.months.length > 0) {
           const tripMonth = format(new Date(trip.start_time), 'yyyy-MM');
@@ -77,6 +96,24 @@ export function DownloadDataView({ filters }: DownloadDataViewProps) {
         if (filters.durationBuckets.length > 0) {
           const bucket = getDurationBucket(trip.trip_duration);
           if (!filters.durationBuckets.includes(bucket)) return false;
+        }
+
+        // Start location radius filter
+        if (filters.startLocationFilter && startLat && startLng) {
+          const distance = haversineDistance(
+            filters.startLocationFilter.lat, filters.startLocationFilter.lng,
+            startLat, startLng
+          );
+          if (distance > filters.startLocationFilter.radiusMeters) return false;
+        }
+
+        // End location radius filter
+        if (filters.endLocationFilter && endLat && endLng) {
+          const distance = haversineDistance(
+            filters.endLocationFilter.lat, filters.endLocationFilter.lng,
+            endLat, endLng
+          );
+          if (distance > filters.endLocationFilter.radiusMeters) return false;
         }
 
         return true;
