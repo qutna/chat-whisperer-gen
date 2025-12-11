@@ -15,168 +15,68 @@ export function DownloadDataView({ filters }: DownloadDataViewProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
 
-  const getDurationBucket = (durationSeconds: number): string => {
-    const minutes = durationSeconds / 60;
-    if (minutes < 10) return '1-10min';
-    if (minutes < 20) return '10-20min';
-    if (minutes < 30) return '20-30min';
-    if (minutes < 60) return '30-60min';
-    return '60+min';
-  };
-
-  const haversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371000;
-    const toRad = (deg: number) => deg * Math.PI / 180;
-    const dLat = toRad(lat2 - lat1);
-    const dLng = toRad(lng2 - lng1);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-              Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
-
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      // Build query with filters
-      let query = supabase
-        .from('trips')
-        .select('*')
-        .gte('trip_duration', 60);
-
-      // Apply server-side filters
-      if (filters.providers.length > 0) {
-        query = query.in('provider_name', filters.providers);
-      }
-      if (filters.vehicleTypes.length > 0) {
-        query = query.in('vehicle_type', filters.vehicleTypes);
-      }
-
-      const { data: trips, error } = await query;
-
-      if (error) throw error;
-      if (!trips || trips.length === 0) {
-        toast({
-          title: "No data to download",
-          description: "No trips match the current filters",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Apply client-side filters
-      const filteredTrips = trips.filter(trip => {
-        const startCoords = (trip.start_location as any)?.coordinates || [null, null];
-        const endCoords = (trip.end_location as any)?.coordinates || [null, null];
-        const startLng = startCoords[0];
-        const startLat = startCoords[1];
-        const endLng = endCoords[0];
-        const endLat = endCoords[1];
-
-        // Months filter
-        if (filters.months.length > 0) {
-          const tripMonth = format(new Date(trip.start_time), 'yyyy-MM');
-          if (!filters.months.includes(tripMonth)) return false;
-        }
-
-        // Days of week filter
-        if (filters.daysOfWeek.length > 0) {
-          const tripDayOfWeek = new Date(trip.start_time).getDay();
-          if (!filters.daysOfWeek.includes(tripDayOfWeek)) return false;
-        }
-
-        // Time slots filter
-        if (filters.timeSlots.length > 0) {
-          const tripHour = format(new Date(trip.start_time), 'HH:00');
-          if (!filters.timeSlots.includes(tripHour)) return false;
-        }
-
-        // Duration buckets filter
-        if (filters.durationBuckets.length > 0) {
-          const bucket = getDurationBucket(trip.trip_duration);
-          if (!filters.durationBuckets.includes(bucket)) return false;
-        }
-
-        // Start location radius filter
-        if (filters.startLocationFilter && startLat && startLng) {
-          const distance = haversineDistance(
-            filters.startLocationFilter.lat, filters.startLocationFilter.lng,
-            startLat, startLng
-          );
-          if (distance > filters.startLocationFilter.radiusMeters) return false;
-        }
-
-        // End location radius filter
-        if (filters.endLocationFilter && endLat && endLng) {
-          const distance = haversineDistance(
-            filters.endLocationFilter.lat, filters.endLocationFilter.lng,
-            endLat, endLng
-          );
-          if (distance > filters.endLocationFilter.radiusMeters) return false;
-        }
-
-        return true;
+      // Use the secure aggregated export function (k-anonymity enforced)
+      const { data: summaryData, error } = await supabase.rpc('get_trip_summary_for_export', {
+        p_filter_months: filters.months.length > 0 ? filters.months : null,
+        p_filter_providers: filters.providers.length > 0 ? filters.providers : null,
+        p_filter_vehicle_types: filters.vehicleTypes.length > 0 ? filters.vehicleTypes : null,
+        p_filter_days_of_week: filters.daysOfWeek.length > 0 ? filters.daysOfWeek : null,
+        p_filter_time_slots: filters.timeSlots.length > 0 ? filters.timeSlots : null,
+        p_filter_duration_buckets: filters.durationBuckets.length > 0 ? filters.durationBuckets : null,
+        p_filter_incentive_ids: filters.incentiveIds.length > 0 ? filters.incentiveIds : null,
+        p_start_lat: filters.startLocationFilter?.lat ?? null,
+        p_start_lng: filters.startLocationFilter?.lng ?? null,
+        p_start_radius_meters: filters.startLocationFilter?.radiusMeters ?? null,
+        p_end_lat: filters.endLocationFilter?.lat ?? null,
+        p_end_lng: filters.endLocationFilter?.lng ?? null,
+        p_end_radius_meters: filters.endLocationFilter?.radiusMeters ?? null,
       });
 
-      if (filteredTrips.length === 0) {
+      if (error) throw error;
+      if (!summaryData || summaryData.length === 0) {
         toast({
           title: "No data to download",
-          description: "No trips match the current filters",
+          description: "No trips match the current filters (minimum 5 trips per group required)",
           variant: "destructive",
         });
         return;
       }
 
-      // Generate CSV
+      // Generate CSV from aggregated summary data
       const headers = [
-        'trip_id',
-        'device_id',
-        'provider_id',
+        'month',
         'provider_name',
-        'vehicle_type',
-        'propulsion_types',
-        'start_time',
-        'end_time',
-        'trip_duration',
-        'trip_distance',
-        'start_location_lng',
-        'start_location_lat',
-        'end_location_lng',
-        'end_location_lat',
-        'standard_cost',
-        'actual_cost',
-        'currency',
-        'accuracy',
+        'bike_type',
+        'day_of_week',
+        'hour_of_day',
+        'duration_bucket',
+        'trip_count',
+        'total_distance_m',
+        'avg_distance_m',
+        'total_duration_s',
+        'avg_duration_s',
       ];
 
       const csvRows = [headers.join(',')];
 
-      filteredTrips.forEach(trip => {
-        const startCoords = (trip.start_location as any)?.coordinates || [null, null];
-        const endCoords = (trip.end_location as any)?.coordinates || [null, null];
-        
-        const row = [
-          trip.trip_id,
-          trip.device_id,
-          trip.provider_id,
-          trip.provider_name,
-          trip.vehicle_type,
-          Array.isArray(trip.propulsion_types) ? trip.propulsion_types.join(';') : '',
-          trip.start_time,
-          trip.end_time,
-          trip.trip_duration,
-          trip.trip_distance,
-          startCoords[0],
-          startCoords[1],
-          endCoords[0],
-          endCoords[1],
-          trip.standard_cost || '',
-          trip.actual_cost || '',
-          trip.currency || '',
-          trip.accuracy,
+      summaryData.forEach((row: any) => {
+        const csvRow = [
+          row.month,
+          row.provider_name,
+          row.bike_type,
+          row.day_of_week?.trim(),
+          row.hour_of_day,
+          row.duration_bucket,
+          row.trip_count,
+          Math.round(row.total_distance),
+          Math.round(row.avg_distance),
+          Math.round(row.total_duration),
+          Math.round(row.avg_duration),
         ];
-        csvRows.push(row.join(','));
+        csvRows.push(csvRow.join(','));
       });
 
       const csvContent = csvRows.join('\n');
@@ -185,15 +85,16 @@ export function DownloadDataView({ filters }: DownloadDataViewProps) {
       const url = URL.createObjectURL(blob);
       
       link.setAttribute('href', url);
-      link.setAttribute('download', `trips_export_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.csv`);
+      link.setAttribute('download', `trips_summary_${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
+      const totalTrips = summaryData.reduce((sum: number, row: any) => sum + row.trip_count, 0);
       toast({
         title: "Download complete",
-        description: `Successfully downloaded ${filteredTrips.length} trips`,
+        description: `Successfully downloaded aggregated summary (${totalTrips.toLocaleString()} trips across ${summaryData.length} groups)`,
       });
 
     } catch (error) {
@@ -211,9 +112,9 @@ export function DownloadDataView({ filters }: DownloadDataViewProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Download Trip Data</CardTitle>
+        <CardTitle>Download Trip Summary</CardTitle>
         <CardDescription>
-          Download filtered trip data as CSV file
+          Download aggregated trip data as CSV file (privacy-protected, minimum 5 trips per group)
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -223,7 +124,7 @@ export function DownloadDataView({ filters }: DownloadDataViewProps) {
           className="w-full sm:w-auto"
         >
           <Download className="mr-2 h-4 w-4" />
-          {isDownloading ? 'Preparing download...' : 'Download CSV'}
+          {isDownloading ? 'Preparing download...' : 'Download Aggregated CSV'}
         </Button>
       </CardContent>
     </Card>
