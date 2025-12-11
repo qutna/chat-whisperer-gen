@@ -51,6 +51,12 @@ export function useModeShifts(filters: TripFilters) {
         p_filter_days_of_week: filters.daysOfWeek.length > 0 ? filters.daysOfWeek : null,
         p_filter_time_slots: filters.timeSlots.length > 0 ? filters.timeSlots : null,
         p_filter_duration_buckets: filters.durationBuckets.length > 0 ? filters.durationBuckets : null,
+        p_start_lat: filters.startLocationFilter?.lat ?? null,
+        p_start_lng: filters.startLocationFilter?.lng ?? null,
+        p_start_radius_meters: filters.startLocationFilter?.radiusMeters ?? null,
+        p_end_lat: filters.endLocationFilter?.lat ?? null,
+        p_end_lng: filters.endLocationFilter?.lng ?? null,
+        p_end_radius_meters: filters.endLocationFilter?.radiusMeters ?? null,
       });
 
       if (error) {

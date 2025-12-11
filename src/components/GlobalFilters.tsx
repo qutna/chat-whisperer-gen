@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
-import { TripFilters, Incentive, DAYS_OF_WEEK, DURATION_BUCKETS, TIME_SLOTS } from "@/types/tripFilters";
+import { TripFilters, Incentive, DAYS_OF_WEEK, DURATION_BUCKETS, TIME_SLOTS, LocationFilter } from "@/types/tripFilters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { LocationFilterMap } from "./LocationFilterMap";
 
 interface GlobalFiltersProps {
   filters: TripFilters;
@@ -305,6 +306,30 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
                   </div>
                 ))}
               </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Start Location */}
+          <AccordionItem value="start-location">
+            <AccordionTrigger className="text-sm font-semibold">Start Location</AccordionTrigger>
+            <AccordionContent>
+              <LocationFilterMap
+                value={filters.startLocationFilter}
+                onChange={(filter) => onFiltersChange({ ...filters, startLocationFilter: filter })}
+                label="Start Location"
+              />
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* End Location */}
+          <AccordionItem value="end-location">
+            <AccordionTrigger className="text-sm font-semibold">End Location</AccordionTrigger>
+            <AccordionContent>
+              <LocationFilterMap
+                value={filters.endLocationFilter}
+                onChange={(filter) => onFiltersChange({ ...filters, endLocationFilter: filter })}
+                label="End Location"
+              />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
