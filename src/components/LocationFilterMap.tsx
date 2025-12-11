@@ -23,7 +23,10 @@ export function LocationFilterMap({ value, onChange, label }: LocationFilterMapP
   const updateCircle = useCallback(() => {
     if (!map.current || !value) return;
 
-    // Remove existing circle
+    // Remove existing circle layers and source
+    if (map.current.getLayer('radius-circle-outline')) {
+      map.current.removeLayer('radius-circle-outline');
+    }
     if (map.current.getLayer('radius-circle')) {
       map.current.removeLayer('radius-circle');
     }
