@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { GlobalFilters } from "@/components/GlobalFilters";
 import { ModeShiftSankey } from "@/components/ModeShiftSankey";
+import { ImpactMetrics } from "@/components/ImpactMetrics";
 import { useModeShifts } from "@/hooks/useModeShifts";
+import { useImpactCalculations } from "@/hooks/useImpactCalculations";
 import { TripFilters } from "@/types/tripFilters";
 
 export default function ImpactsPage() {
@@ -17,7 +19,8 @@ export default function ImpactsPage() {
     endLocationFilter: null,
   });
 
-  const { data: sankeyData, isLoading } = useModeShifts(filters);
+  const { data: sankeyData, isLoading: sankeyLoading } = useModeShifts(filters);
+  const { data: impactData, isLoading: impactLoading } = useImpactCalculations(filters);
 
   return (
     <div className="space-y-6">
@@ -36,7 +39,8 @@ export default function ImpactsPage() {
 
         {/* Main Content */}
         <div className="flex-1 space-y-6">
-          <ModeShiftSankey data={sankeyData} isLoading={isLoading} />
+          <ModeShiftSankey data={sankeyData} isLoading={sankeyLoading} />
+          <ImpactMetrics data={impactData} isLoading={impactLoading} />
         </div>
       </div>
     </div>

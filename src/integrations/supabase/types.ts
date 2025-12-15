@@ -191,6 +191,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_rush_hour_percent: {
+        Args: {
+          p_end_time: string
+          p_start_time: string
+          p_trip_duration: number
+        }
+        Returns: number
+      }
       get_aggregated_routes: {
         Args: {
           p_end_lat?: number
@@ -219,6 +227,30 @@ export type Database = {
           end_lng: number
           start_lat: number
           start_lng: number
+          trip_count: number
+        }[]
+      }
+      get_impact_calculation_data: {
+        Args: {
+          p_end_lat?: number
+          p_end_lng?: number
+          p_end_radius_meters?: number
+          p_filter_days_of_week?: number[]
+          p_filter_duration_buckets?: string[]
+          p_filter_incentive_ids?: string[]
+          p_filter_months?: string[]
+          p_filter_providers?: string[]
+          p_filter_time_slots?: string[]
+          p_filter_vehicle_types?: string[]
+          p_start_lat?: number
+          p_start_lng?: number
+          p_start_radius_meters?: number
+        }
+        Returns: {
+          avg_rush_hour_percent: number
+          avg_urban_percent: number
+          previous_mode: string
+          total_distance_km: number
           trip_count: number
         }[]
       }
@@ -316,6 +348,10 @@ export type Database = {
           total_duration: number
           trip_count: number
         }[]
+      }
+      point_in_copenhagen_urban: {
+        Args: { p_lat: number; p_lng: number }
+        Returns: boolean
       }
     }
     Enums: {
