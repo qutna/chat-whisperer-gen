@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { TripFilters } from "@/types/tripFilters";
+import { TripFilters, getMonthsFromDateRange } from "@/types/tripFilters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -25,10 +25,11 @@ export function GraphView({ filters, dimension, metric }: GraphViewProps) {
     const fetchData = async () => {
       setLoading(true);
       try {
+        const months = getMonthsFromDateRange(filters.startDate, filters.endDate);
         const { data: result, error } = await supabase.rpc('get_trip_aggregation', {
           p_dimension: dimension,
           p_metric: metric,
-          p_filter_months: filters.months.length > 0 ? filters.months : null,
+          p_filter_months: months.length > 0 ? months : null,
           p_filter_providers: filters.providers.length > 0 ? filters.providers : null,
           p_filter_vehicle_types: filters.vehicleTypes.length > 0 ? filters.vehicleTypes : null,
           p_filter_days_of_week: filters.daysOfWeek.length > 0 ? filters.daysOfWeek : null,

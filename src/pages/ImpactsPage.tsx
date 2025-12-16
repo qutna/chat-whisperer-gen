@@ -9,7 +9,8 @@ import { TripFilters } from "@/types/tripFilters";
 export default function ImpactsPage() {
   const [filters, setFilters] = useState<TripFilters>({
     incentiveIds: [],
-    months: [],
+    startDate: null,
+    endDate: null,
     providers: [],
     vehicleTypes: [],
     daysOfWeek: [],

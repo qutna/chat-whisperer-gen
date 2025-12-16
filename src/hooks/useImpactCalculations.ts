@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TripFilters } from "@/types/tripFilters";
+import { TripFilters, getMonthsFromDateRange } from "@/types/tripFilters";
 import { ImpactRates, MODE_TO_RATE_KEY, calculateNetImpact, BIKE_RATES as DEFAULT_BIKE_RATES } from "@/data/impactRates";
 
 interface ImpactCalculationData {
@@ -78,10 +78,11 @@ export function useImpactCalculations(filters: TripFilters) {
         }
       }
 
+      const months = getMonthsFromDateRange(filters.startDate, filters.endDate);
       // Fetch impact calculation data
       const { data, error } = await supabase.rpc("get_impact_calculation_data", {
         p_filter_incentive_ids: filters.incentiveIds.length > 0 ? filters.incentiveIds : null,
-        p_filter_months: filters.months.length > 0 ? filters.months : null,
+        p_filter_months: months.length > 0 ? months : null,
         p_filter_providers: filters.providers.length > 0 ? filters.providers : null,
         p_filter_vehicle_types: filters.vehicleTypes.length > 0 ? filters.vehicleTypes : null,
         p_filter_days_of_week: filters.daysOfWeek.length > 0 ? filters.daysOfWeek : null,
