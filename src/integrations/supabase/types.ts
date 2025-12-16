@@ -249,6 +249,8 @@ export type Database = {
         Returns: {
           avg_rush_hour_percent: number
           avg_urban_percent: number
+          extrapolated_distance_km: number
+          extrapolated_trip_count: number
           previous_mode: string
           total_distance_km: number
           trip_count: number

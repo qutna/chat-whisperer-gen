@@ -1,5 +1,6 @@
 // Impact rates in EUR per km passenger
-// Source: Impact_Calc_for_Loveable.xlsx
+// Source: Impact_Calc_for_Loveable.xlsx (updated values)
+// Sign convention: negative = external cost, positive = external benefit
 
 export interface ImpactRates {
   spaceUrban: number;
@@ -25,94 +26,95 @@ export const MODE_TO_RATE_KEY: Record<string, keyof typeof IMPACT_RATES_BY_MODE>
 
 export const IMPACT_RATES_BY_MODE: Record<string, ImpactRates> = {
   car: {
-    spaceUrban: 0.079,
-    spaceSuburban: 0.012,
-    congestionRush: 0.140,
-    congestionNonRush: 0.048,
-    co2: 0.093,
-    access: 0.000,
-    health: -0.010,
+    spaceUrban: -1.0,
+    spaceSuburban: -0.5,
+    congestionRush: -0.8,
+    congestionNonRush: -0.2,
+    co2: -0.1,
+    access: 0.2,
+    health: -1.0,
   },
   bus: {
-    spaceUrban: 0.009,
-    spaceSuburban: 0.003,
-    congestionRush: 0.024,
-    congestionNonRush: 0.008,
-    co2: 0.059,
-    access: 0.000,
-    health: -0.007,
+    spaceUrban: -0.2,
+    spaceSuburban: -0.1,
+    congestionRush: -0.2,
+    congestionNonRush: -0.1,
+    co2: -0.002,
+    access: 0.2,
+    health: -0.1,
   },
   rail: {
-    spaceUrban: 0.002,
-    spaceSuburban: 0.001,
-    congestionRush: 0.004,
-    congestionNonRush: 0.001,
-    co2: 0.023,
-    access: 0.000,
-    health: -0.007,
+    spaceUrban: -0.02,
+    spaceSuburban: -0.01,
+    congestionRush: 0,
+    congestionNonRush: 0,
+    co2: -0.001,
+    access: 0.2,
+    health: 0,
   },
   scooterMoped: {
-    spaceUrban: 0.015,
-    spaceSuburban: 0.006,
-    congestionRush: 0.027,
-    congestionNonRush: 0.009,
-    co2: 0.079,
-    access: 0.000,
-    health: -0.005,
+    spaceUrban: -0.01,
+    spaceSuburban: -0.005,
+    congestionRush: 0,
+    congestionNonRush: 0,
+    co2: -0.015,
+    access: 0.2,
+    health: -0.2,
   },
   cycling: {
-    spaceUrban: 0.000,
-    spaceSuburban: 0.000,
-    congestionRush: 0.000,
-    congestionNonRush: 0.000,
-    co2: 0.000,
-    access: 0.000,
-    health: 0.180,
+    spaceUrban: -0.01,
+    spaceSuburban: -0.005,
+    congestionRush: 0,
+    congestionNonRush: 0,
+    co2: -0.005,
+    access: 0.2,
+    health: 1.0,
   },
   walking: {
-    spaceUrban: 0.000,
-    spaceSuburban: 0.000,
-    congestionRush: 0.000,
-    congestionNonRush: 0.000,
-    co2: 0.000,
-    access: 0.000,
-    health: 0.305,
+    spaceUrban: 0.02,
+    spaceSuburban: 0.02,
+    congestionRush: 0,
+    congestionNonRush: 0,
+    co2: -0.0001,
+    access: 0.2,
+    health: 1.5,
   },
   newTrip: {
-    spaceUrban: 0.000,
-    spaceSuburban: 0.000,
-    congestionRush: 0.000,
-    congestionNonRush: 0.000,
-    co2: 0.000,
-    access: 0.000,
-    health: 0.180,
+    // New trips are induced demand - use bike rates as baseline
+    spaceUrban: -0.01,
+    spaceSuburban: -0.005,
+    congestionRush: 0,
+    congestionNonRush: 0,
+    co2: -0.005,
+    access: 0.2,
+    health: 1.0,
   },
   other: {
-    // Default to 0 impact for "other" category
-    spaceUrban: 0.000,
-    spaceSuburban: 0.000,
-    congestionRush: 0.000,
-    congestionNonRush: 0.000,
-    co2: 0.000,
-    access: 0.000,
-    health: 0.000,
+    // Default to zero impact for "other" category
+    spaceUrban: 0,
+    spaceSuburban: 0,
+    congestionRush: 0,
+    congestionNonRush: 0,
+    co2: 0,
+    access: 0,
+    health: 0,
   },
 };
 
-// Bike (target mode) rates - used to calculate net impact
+// Bike (target mode) rates - the mode users are switching TO
 export const BIKE_RATES: ImpactRates = {
-  spaceUrban: 0.000,
-  spaceSuburban: 0.000,
-  congestionRush: 0.000,
-  congestionNonRush: 0.000,
-  co2: 0.000,
-  access: 0.000,
-  health: 0.180,
+  spaceUrban: -0.01,
+  spaceSuburban: -0.005,
+  congestionRush: 0,
+  congestionNonRush: 0,
+  co2: -0.005,
+  access: 0.2,
+  health: 1.0,
 };
 
 /**
- * Calculate impact for a single category
- * Net impact = Previous mode impact - Bike impact
+ * Calculate net impact for a mode shift to bike
+ * Net Benefit = Bike Impact - Previous Mode Impact
  * Positive value = benefit from switching to bike
  */
 export function calculateNetImpact(
@@ -132,24 +134,23 @@ export function calculateNetImpact(
                         (1 - urbanPercent) * previousModeRates.spaceSuburban;
   const bikeSpaceRate = urbanPercent * BIKE_RATES.spaceUrban + 
                         (1 - urbanPercent) * BIKE_RATES.spaceSuburban;
-  const space = (prevSpaceRate - bikeSpaceRate) * distanceKm;
+  // Benefit = Bike - Previous (e.g., -0.01 - (-1.0) = 0.99 benefit from car->bike)
+  const space = (bikeSpaceRate - prevSpaceRate) * distanceKm;
 
   // Congestion: weighted by rush hour
   const prevCongestionRate = rushHourPercent * previousModeRates.congestionRush + 
                              (1 - rushHourPercent) * previousModeRates.congestionNonRush;
   const bikeCongestionRate = rushHourPercent * BIKE_RATES.congestionRush + 
                              (1 - rushHourPercent) * BIKE_RATES.congestionNonRush;
-  const congestion = (prevCongestionRate - bikeCongestionRate) * distanceKm;
+  const congestion = (bikeCongestionRate - prevCongestionRate) * distanceKm;
 
-  // CO2: no weighting
-  const co2 = (previousModeRates.co2 - BIKE_RATES.co2) * distanceKm;
+  // CO2: Benefit = Bike - Previous (e.g., -0.005 - (-0.1) = 0.095 benefit from car->bike)
+  const co2 = (BIKE_RATES.co2 - previousModeRates.co2) * distanceKm;
 
-  // Access: no weighting
-  const access = (previousModeRates.access - BIKE_RATES.access) * distanceKm;
+  // Access: All modes have same access rate (0.2), so net = 0
+  const access = (BIKE_RATES.access - previousModeRates.access) * distanceKm;
 
-  // Health: Net = Bike health benefit - Previous mode health impact
-  // Since bike health is positive (0.18) and car health is negative (-0.01),
-  // switching from car to bike gives: 0.18 - (-0.01) = 0.19 per km
+  // Health: Benefit = Bike - Previous (e.g., 1.0 - (-1.0) = 2.0 benefit from car->bike)
   const health = (BIKE_RATES.health - previousModeRates.health) * distanceKm;
 
   return { space, congestion, co2, access, health };

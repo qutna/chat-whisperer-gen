@@ -9,6 +9,8 @@ interface ImpactCalculationData {
   avg_urban_percent: number;
   avg_rush_hour_percent: number;
   trip_count: number;
+  extrapolated_distance_km: number;
+  extrapolated_trip_count: number;
 }
 
 export interface ImpactResults {
@@ -61,10 +63,10 @@ export function useImpactCalculations(filters: TripFilters) {
         const modeKey = MODE_TO_RATE_KEY[row.previous_mode] || "other";
         const rates = IMPACT_RATES_BY_MODE[modeKey] || IMPACT_RATES_BY_MODE.other;
 
-        // Calculate impacts for this mode shift
+        // Use extrapolated distance for impact calculations
         const impacts = calculateNetImpact(
           rates,
-          row.total_distance_km,
+          row.extrapolated_distance_km,
           row.avg_urban_percent,
           row.avg_rush_hour_percent
         );
@@ -74,8 +76,8 @@ export function useImpactCalculations(filters: TripFilters) {
         totalCo2 += impacts.co2;
         totalAccess += impacts.access;
         totalHealth += impacts.health;
-        totalTrips += row.trip_count;
-        totalDistanceKm += row.total_distance_km;
+        totalTrips += row.extrapolated_trip_count;
+        totalDistanceKm += row.extrapolated_distance_km;
       }
 
       return {
