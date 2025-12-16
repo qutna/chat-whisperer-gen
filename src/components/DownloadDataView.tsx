@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download } from 'lucide-react';
-import { TripFilters } from '@/types/tripFilters';
+import { TripFilters, getMonthsFromDateRange } from '@/types/tripFilters';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -18,9 +18,10 @@ export function DownloadDataView({ filters }: DownloadDataViewProps) {
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
+      const months = getMonthsFromDateRange(filters.startDate, filters.endDate);
       // Use the secure aggregated export function (k-anonymity enforced)
       const { data: summaryData, error } = await supabase.rpc('get_trip_summary_for_export', {
-        p_filter_months: filters.months.length > 0 ? filters.months : null,
+        p_filter_months: months.length > 0 ? months : null,
         p_filter_providers: filters.providers.length > 0 ? filters.providers : null,
         p_filter_vehicle_types: filters.vehicleTypes.length > 0 ? filters.vehicleTypes : null,
         p_filter_days_of_week: filters.daysOfWeek.length > 0 ? filters.daysOfWeek : null,

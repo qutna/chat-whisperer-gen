@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { format } from 'date-fns';
-import { TripFilters } from '@/types/tripFilters';
+import { TripFilters, getMonthsFromDateRange } from '@/types/tripFilters';
 import { supabase } from '@/integrations/supabase/client';
 
 interface MapViewProps {
@@ -60,6 +60,7 @@ export function MapView({ filters }: MapViewProps) {
     const gridSizeDeg = (metersPerPixel * 40) / 111320.0;
 
     try {
+      const months = getMonthsFromDateRange(filters.startDate, filters.endDate);
       // Use the secure aggregated routes function
       const { data, error } = await supabase.rpc('get_aggregated_routes', {
         p_min_lng: bounds.getWest(),
@@ -67,7 +68,7 @@ export function MapView({ filters }: MapViewProps) {
         p_min_lat: bounds.getSouth(),
         p_max_lat: bounds.getNorth(),
         p_grid_size_deg: gridSizeDeg,
-        p_filter_months: filters.months.length > 0 ? filters.months : null,
+        p_filter_months: months.length > 0 ? months : null,
         p_filter_providers: filters.providers.length > 0 ? filters.providers : null,
         p_filter_vehicle_types: filters.vehicleTypes.length > 0 ? filters.vehicleTypes : null,
         p_filter_days_of_week: filters.daysOfWeek.length > 0 ? filters.daysOfWeek : null,

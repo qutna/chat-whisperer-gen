@@ -6,7 +6,8 @@ export interface LocationFilter {
 
 export interface TripFilters {
   incentiveIds: string[];
-  months: string[];
+  startDate: Date | null;
+  endDate: Date | null;
   providers: string[];
   vehicleTypes: string[];
   daysOfWeek: number[];
@@ -67,3 +68,26 @@ export const DURATION_BUCKETS = [
 export const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
   return `${i.toString().padStart(2, '0')}:00`;
 });
+
+/**
+ * Compute months array (YYYY-MM format) from start and end dates
+ */
+export function getMonthsFromDateRange(startDate: Date | null, endDate: Date | null): string[] {
+  if (!startDate && !endDate) return [];
+  
+  const start = startDate || endDate!;
+  const end = endDate || startDate!;
+  
+  const months: string[] = [];
+  const current = new Date(start.getFullYear(), start.getMonth(), 1);
+  const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
+  
+  while (current <= endMonth) {
+    const year = current.getFullYear();
+    const month = (current.getMonth() + 1).toString().padStart(2, '0');
+    months.push(`${year}-${month}`);
+    current.setMonth(current.getMonth() + 1);
+  }
+  
+  return months;
+}

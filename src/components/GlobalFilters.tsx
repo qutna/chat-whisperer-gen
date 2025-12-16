@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { TripFilters, Incentive, DAYS_OF_WEEK, DURATION_BUCKETS, TIME_SLOTS, LocationFilter } from "@/types/tripFilters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LocationFilterMap } from "./LocationFilterMap";
+import { cn } from "@/lib/utils";
 
 interface GlobalFiltersProps {
   filters: TripFilters;
@@ -14,7 +20,6 @@ interface GlobalFiltersProps {
 
 export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) {
   const [availableIncentives, setAvailableIncentives] = useState<Pick<Incentive, 'id' | 'numeric_id' | 'brief_name'>[]>([]);
-  const [availableMonths, setAvailableMonths] = useState<string[]>([]);
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [availableBikeTypes, setAvailableBikeTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,19 +38,6 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
         } else {
           setAvailableIncentives(incentiveData || []);
         }
-
-        // Fetch unique months using aggregation
-        const { data: monthData, error: monthError } = await supabase
-          .rpc('get_trip_aggregation', {
-            p_dimension: 'month',
-            p_metric: 'count'
-          });
-
-        if (monthError) {
-          console.error('Error fetching months:', monthError);
-        }
-
-        const months = monthData?.map(d => d.dimension).filter(Boolean).sort() || [];
 
         // Fetch unique providers using aggregation
         const { data: providerData, error: providerError } = await supabase
@@ -75,12 +67,10 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
 
         console.log('Filter options loaded:', {
           incentives: incentiveData?.length || 0,
-          months: months.length,
           providers: providers.length,
           bikeTypes: bikeTypes.length
         });
 
-        setAvailableMonths(months);
         setAvailableProviders(providers);
         setAvailableBikeTypes(bikeTypes);
       } catch (error) {
@@ -166,26 +156,73 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
             </AccordionContent>
           </AccordionItem>
 
-          {/* Months */}
-          <AccordionItem value="months">
-            <AccordionTrigger className="text-sm font-semibold">Months</AccordionTrigger>
+          {/* Period (Date Range) */}
+          <AccordionItem value="period">
+            <AccordionTrigger className="text-sm font-semibold">Period</AccordionTrigger>
             <AccordionContent>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {availableMonths.map(month => (
-                  <div key={month} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`month-${month}`}
-                      checked={filters.months.includes(month)}
-                      onCheckedChange={() => toggleFilter('months', month)}
-                    />
-                    <label
-                      htmlFor={`month-${month}`}
-                      className="text-sm cursor-pointer truncate flex-1"
-                    >
-                      {month}
-                    </label>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">Start Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !filters.startDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {filters.startDate ? format(filters.startDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={filters.startDate || undefined}
+                        onSelect={(date) => onFiltersChange({ ...filters, startDate: date || null })}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">End Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !filters.endDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {filters.endDate ? format(filters.endDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={filters.endDate || undefined}
+                        onSelect={(date) => onFiltersChange({ ...filters, endDate: date || null })}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                {(filters.startDate || filters.endDate) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs"
+                    onClick={() => onFiltersChange({ ...filters, startDate: null, endDate: null })}
+                  >
+                    Clear dates
+                  </Button>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>
