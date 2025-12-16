@@ -122,6 +122,39 @@ export type Database = {
         }
         Relationships: []
       }
+      rush_hour_settings: {
+        Row: {
+          day_of_week: number
+          evening_end: string | null
+          evening_start: string | null
+          id: string
+          is_enabled: boolean | null
+          morning_end: string | null
+          morning_start: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          day_of_week: number
+          evening_end?: string | null
+          evening_start?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          morning_end?: string | null
+          morning_start?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          day_of_week?: number
+          evening_end?: string | null
+          evening_start?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          morning_end?: string | null
+          morning_start?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       trip_surveys: {
         Row: {
           created_at: string | null
@@ -227,6 +260,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      urban_area_settings: {
+        Row: {
+          id: string
+          name: string
+          polygon: Json
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name?: string
+          polygon: Json
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          polygon?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
