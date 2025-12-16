@@ -1,5 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImpactRateSettingsMatrix } from "@/components/ImpactRateSettingsMatrix";
+import { RushHourSettingsEditor } from "@/components/RushHourSettingsEditor";
+import { UrbanAreaEditor } from "@/components/UrbanAreaEditor";
 
 export default function AccountPage() {
   return (
@@ -26,7 +28,18 @@ export default function AccountPage() {
           </CardContent>
         </Card>
 
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold">Impact Calculation Settings</h2>
+          <p className="text-sm text-muted-foreground">
+            Configure the parameters used for calculating trip impacts
+          </p>
+        </div>
+
         <ImpactRateSettingsMatrix />
+        
+        <RushHourSettingsEditor />
+        
+        <UrbanAreaEditor />
       </div>
     </div>
   );
