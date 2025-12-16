@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      impact_rate_settings: {
+        Row: {
+          access: number
+          co2: number
+          congestion_non_rush: number
+          congestion_rush: number
+          health: number
+          id: string
+          mode: string
+          space_suburban: number
+          space_urban: number
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          access: number
+          co2: number
+          congestion_non_rush: number
+          congestion_rush: number
+          health: number
+          id?: string
+          mode: string
+          space_suburban: number
+          space_urban: number
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          access?: number
+          co2?: number
+          congestion_non_rush?: number
+          congestion_rush?: number
+          health?: number
+          id?: string
+          mode?: string
+          space_suburban?: number
+          space_urban?: number
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       incentives: {
         Row: {
           amount: number

@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImpactRateSettingsMatrix } from "@/components/ImpactRateSettingsMatrix";
 
 export default function AccountPage() {
   return (
@@ -24,6 +25,8 @@ export default function AccountPage() {
             </p>
           </CardContent>
         </Card>
+
+        <ImpactRateSettingsMatrix />
       </div>
     </div>
   );
