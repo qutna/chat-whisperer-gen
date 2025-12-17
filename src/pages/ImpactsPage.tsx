@@ -40,8 +40,8 @@ export default function ImpactsPage() {
 
         {/* Main Content */}
         <div className="flex-1 space-y-6">
-          <ModeShiftSankey data={sankeyData} isLoading={sankeyLoading} />
           <ImpactMetrics data={impactData} isLoading={impactLoading} />
+          <ModeShiftSankey data={sankeyData} isLoading={sankeyLoading} />
         </div>
       </div>
     </div>
