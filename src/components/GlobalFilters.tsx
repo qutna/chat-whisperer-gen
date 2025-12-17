@@ -346,27 +346,28 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
             </AccordionContent>
           </AccordionItem>
 
-          {/* Start Location */}
-          <AccordionItem value="start-location">
-            <AccordionTrigger className="text-sm font-semibold">Start Location</AccordionTrigger>
+          {/* Location */}
+          <AccordionItem value="location">
+            <AccordionTrigger className="text-sm font-semibold">Location</AccordionTrigger>
             <AccordionContent>
-              <LocationFilterMap
-                value={filters.startLocationFilter}
-                onChange={(filter) => onFiltersChange({ ...filters, startLocationFilter: filter })}
-                label="Start Location"
-              />
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* End Location */}
-          <AccordionItem value="end-location">
-            <AccordionTrigger className="text-sm font-semibold">End Location</AccordionTrigger>
-            <AccordionContent>
-              <LocationFilterMap
-                value={filters.endLocationFilter}
-                onChange={(filter) => onFiltersChange({ ...filters, endLocationFilter: filter })}
-                label="End Location"
-              />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Start Location</label>
+                  <LocationFilterMap
+                    value={filters.startLocationFilter}
+                    onChange={(filter) => onFiltersChange({ ...filters, startLocationFilter: filter })}
+                    label="Start Location"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">End Location</label>
+                  <LocationFilterMap
+                    value={filters.endLocationFilter}
+                    onChange={(filter) => onFiltersChange({ ...filters, endLocationFilter: filter })}
+                    label="End Location"
+                  />
+                </div>
+              </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
