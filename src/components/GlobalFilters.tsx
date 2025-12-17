@@ -274,6 +274,31 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
             </AccordionContent>
           </AccordionItem>
 
+          {/* Location */}
+          <AccordionItem value="location">
+            <AccordionTrigger className="text-sm font-semibold">Location</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">Start Location</label>
+                  <LocationFilterMap
+                    value={filters.startLocationFilter}
+                    onChange={(filter) => onFiltersChange({ ...filters, startLocationFilter: filter })}
+                    label="Start Location"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">End Location</label>
+                  <LocationFilterMap
+                    value={filters.endLocationFilter}
+                    onChange={(filter) => onFiltersChange({ ...filters, endLocationFilter: filter })}
+                    label="End Location"
+                  />
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
           {/* Days of Week */}
           <AccordionItem value="days-of-week">
             <AccordionTrigger className="text-sm font-semibold">Days of Week</AccordionTrigger>
@@ -342,31 +367,6 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
                     </label>
                   </div>
                 ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* Location */}
-          <AccordionItem value="location">
-            <AccordionTrigger className="text-sm font-semibold">Location</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground">Start Location</label>
-                  <LocationFilterMap
-                    value={filters.startLocationFilter}
-                    onChange={(filter) => onFiltersChange({ ...filters, startLocationFilter: filter })}
-                    label="Start Location"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground">End Location</label>
-                  <LocationFilterMap
-                    value={filters.endLocationFilter}
-                    onChange={(filter) => onFiltersChange({ ...filters, endLocationFilter: filter })}
-                    label="End Location"
-                  />
-                </div>
               </div>
             </AccordionContent>
           </AccordionItem>
