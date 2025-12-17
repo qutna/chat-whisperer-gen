@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,45 +22,18 @@ export function UrbanAreaEditor() {
   const updateMutation = useUpdateUrbanAreaSettings();
   const [isEditing, setIsEditing] = useState(false);
   const [editingPoints, setEditingPoints] = useState<number[][]>([]);
+  const [mapLoaded, setMapLoaded] = useState(false);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
 
   const polygon = settings?.polygon || DEFAULT_POLYGON;
 
-  useEffect(() => {
-    if (!mapContainer.current || !MAPBOX_TOKEN) return;
+  const updatePolygonLayer = useCallback(() => {
+    if (!map.current || !map.current.isStyleLoaded()) return;
 
-    mapboxgl.accessToken = MAPBOX_TOKEN;
-
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/light-v11",
-      center: [12.55, 55.67],
-      zoom: 11,
-    });
-
-    map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
-
-    map.current.on("load", () => {
-      updatePolygonLayer();
-    });
-
-    return () => {
-      map.current?.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (map.current && map.current.isStyleLoaded()) {
-      updatePolygonLayer();
-    }
-  }, [settings, isEditing, editingPoints]);
-
-  const updatePolygonLayer = () => {
-    if (!map.current) return;
-
+    const currentPolygon = settings?.polygon || DEFAULT_POLYGON;
     const coords = isEditing && editingPoints.length > 0 
       ? [...editingPoints, editingPoints[0]] 
-      : polygon.coordinates[0];
+      : currentPolygon.coordinates[0];
 
     // Remove existing layers/sources
     if (map.current.getLayer("urban-area-fill")) {
@@ -105,7 +78,40 @@ export function UrbanAreaEditor() {
         "line-width": 2,
       },
     });
-  };
+  }, [settings, isEditing, editingPoints]);
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainer.current || !MAPBOX_TOKEN) return;
+
+    mapboxgl.accessToken = MAPBOX_TOKEN;
+
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: "mapbox://styles/mapbox/light-v11",
+      center: [12.55, 55.67],
+      zoom: 11,
+    });
+
+    map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
+
+    map.current.on("load", () => {
+      setMapLoaded(true);
+    });
+
+    return () => {
+      map.current?.remove();
+      map.current = null;
+      setMapLoaded(false);
+    };
+  }, []);
+
+  // Update polygon when map is loaded AND settings are available
+  useEffect(() => {
+    if (mapLoaded && !isLoading) {
+      updatePolygonLayer();
+    }
+  }, [mapLoaded, isLoading, updatePolygonLayer]);
 
   const startEditing = () => {
     const coords = polygon.coordinates[0];
@@ -148,7 +154,6 @@ export function UrbanAreaEditor() {
     clearMarkers();
     setIsEditing(false);
     setEditingPoints([]);
-    updatePolygonLayer();
   };
 
   const saveEditing = () => {
@@ -170,7 +175,9 @@ export function UrbanAreaEditor() {
 
   const resetToDefault = () => {
     updateMutation.mutate(DEFAULT_POLYGON);
-    cancelEditing();
+    clearMarkers();
+    setIsEditing(false);
+    setEditingPoints([]);
   };
 
   const addPoint = (e: React.MouseEvent) => {
