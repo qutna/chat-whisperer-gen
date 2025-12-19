@@ -77,13 +77,20 @@ export function useModeShifts(filters: TripFilters) {
       // Calculate total trips (sum of all extrapolated counts)
       const totalTrips = Object.values(modeTotals).reduce((sum, val) => sum + val, 0);
 
-      // Sort source modes by count (largest to smallest), but keep new_trip always last
+      // Sort source modes by count (largest to smallest), with new_trip always at the bottom
       const sortedModes = SOURCE_MODES
-        .filter((mode) => mode !== "new_trip")
+        .filter((mode) => modeTotals[mode] > 0 && mode !== "new_trip")
         .sort((a, b) => (modeTotals[b] || 0) - (modeTotals[a] || 0));
-      sortedModes.push("new_trip"); // Always at the bottom
+      
+      // Always add new_trip at the very bottom if it has data
+      if (modeTotals["new_trip"] > 0) {
+        sortedModes.push("new_trip");
+      }
 
       // Build nodes: sorted sources + 2 targets
+      const pBikeIndex = sortedModes.length;
+      const eBikeIndex = sortedModes.length + 1;
+      
       const nodes: SankeyNode[] = [
         ...sortedModes.map((mode) => ({
           name: MODE_LABELS[mode],
@@ -97,11 +104,11 @@ export function useModeShifts(filters: TripFilters) {
       // Calculate target totals
       modeShiftData.forEach((row) => {
         const value = Math.round(row.extrapolated_count);
-        const targetNode = row.bike_type === "P-Bike" ? nodes[7] : nodes[8];
+        const targetNode = row.bike_type === "P-Bike" ? nodes[pBikeIndex] : nodes[eBikeIndex];
         targetNode.value = (targetNode.value || 0) + value;
       });
-      nodes[7].percentage = totalTrips > 0 ? ((nodes[7].value || 0) / totalTrips) * 100 : 0;
-      nodes[8].percentage = totalTrips > 0 ? ((nodes[8].value || 0) / totalTrips) * 100 : 0;
+      nodes[pBikeIndex].percentage = totalTrips > 0 ? ((nodes[pBikeIndex].value || 0) / totalTrips) * 100 : 0;
+      nodes[eBikeIndex].percentage = totalTrips > 0 ? ((nodes[eBikeIndex].value || 0) / totalTrips) * 100 : 0;
 
       // Build links from the data
       const links: SankeyLink[] = [];
@@ -110,7 +117,7 @@ export function useModeShifts(filters: TripFilters) {
         const sourceIndex = sortedModes.indexOf(row.previous_mode);
         if (sourceIndex === -1) return;
 
-        const targetIndex = row.bike_type === "P-Bike" ? 7 : 8;
+        const targetIndex = row.bike_type === "P-Bike" ? pBikeIndex : eBikeIndex;
         const value = Math.round(row.extrapolated_count);
 
         if (value > 0) {
