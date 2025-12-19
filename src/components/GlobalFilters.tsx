@@ -113,7 +113,7 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Global Filters</CardTitle>
+        <CardTitle>Filter</CardTitle>
       </CardHeader>
       <CardContent>
         <Accordion type="multiple" className="w-full">
