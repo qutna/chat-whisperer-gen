@@ -277,14 +277,14 @@ export function IncentiveEditDialog({ open, onOpenChange, incentive, onSave, mod
           <div className="space-y-2">
             <Label htmlFor="business_model">Business Model</Label>
             <Select
-              value={formData.business_model}
-              onValueChange={(value) => setFormData({ ...formData, business_model: value })}
+              value={formData.business_model || "any"}
+              onValueChange={(value) => setFormData({ ...formData, business_model: value === "any" ? "" : value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select business model" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any</SelectItem>
+                <SelectItem value="any">Any</SelectItem>
                 {BUSINESS_MODEL_OPTIONS.map((model) => (
                   <SelectItem key={model} value={model}>
                     {model.replace("_", " ")}
