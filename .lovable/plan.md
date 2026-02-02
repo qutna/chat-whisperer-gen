@@ -1,46 +1,52 @@
 
-# Fix: Prevent Incentive Periods Before Start Date
 
-## Problem Identified
-The period generation logic in `useIncentivePeriods.ts` incorrectly shows Q2 2025 even though the first incentive date is set to July 1st 2025. This happens because the code tries to show historical periods by going back in time, but it doesn't respect the configured start date as a hard boundary.
+# Filter Incentives by Selected Period
+
+## Problem
+The database was successfully updated with the correct date ranges for each incentive:
+- #1: Q3 2025 (Jul 1, 2025)
+- #2, #3: Q4 2025 (Oct 1, 2025)
+- #4, #5: Q2 2026 (Apr 1, 2026)
+- #6, #7, #8: Q3 2026 (Jul 1, 2026)
+
+However, the Incentives page displays ALL incentives regardless of which period is selected. The table should only show incentives that are valid within the currently selected period.
 
 ## Solution
-Modify the period generation logic to ensure no periods are generated before the configured start date. The `start_date` setting should be the absolute earliest period that can exist.
+Modify the `fetchIncentives` function to filter incentives based on the selected period's date range. An incentive should appear in a period if its validity window overlaps with that period.
 
 ## Changes Required
 
-### File: `src/hooks/useIncentivePeriods.ts`
+### File: `src/pages/IncentivesPage.tsx`
 
-**Current behavior (lines 90-99):**
-- Goes back up to 24 months to find historical periods
-- Can accidentally create periods before the configured start date
+1. **Update `fetchIncentives` to accept period dates** - Pass `currentPeriod.startDate` and `currentPeriod.endDate` to filter results
 
-**New behavior:**
-- Start from the configured `start_date`
-- Only go forward in time from there
-- Never generate any period that starts before `start_date`
+2. **Add date-based filtering** - Filter incentives where:
+   - `valid_from <= period.endDate` AND
+   - `valid_to >= period.startDate`
+   
+   This captures any incentive whose validity window overlaps with the period.
 
-The fix involves:
-1. Remove the logic that rewinds before the start date
-2. Keep the start date as the absolute first period
-3. Only generate periods from the start date forward until 12 months into the future
+3. **Re-fetch when period changes** - Add `currentPeriod` as a dependency to the useEffect that calls `fetchIncentives`
 
 ---
 
 ## Technical Details
 
-```text
-Before fix (with start_date = July 1, 2025, frequency = 3-monthly):
-  Q2 2025 (Apr 1) ← incorrectly generated
-  Q3 2025 (Jul 1) ← this should be the first
-  Q4 2025
-  Q1 2026
-  ...
+The filtering logic ensures an incentive appears in a period if there's any overlap:
 
-After fix:
-  H2 2025 (Jul 1) ← first period, respects start_date
-  H1 2026 (Jan 1)
-  ...
+```text
+Period:          |-------- Q3 2025 --------|
+Incentive #1:    |=========================| (valid_from: Jul 1, valid_to: Sep 30)
+                 ↑ Overlaps - SHOW
+
+Period:          |-------- Q3 2025 --------|
+Incentive #2:                                |=====| (valid_from: Oct 1)
+                                             ↑ No overlap - HIDE
 ```
 
-The change ensures the configured start date is always the earliest possible period boundary.
+The SQL query will use:
+```sql
+.lte('valid_from', periodEndDate)
+.gte('valid_to', periodStartDate)
+```
+
