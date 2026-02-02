@@ -84,21 +84,8 @@ export function useIncentivePeriods() {
     const result: IncentivePeriod[] = [];
     let currentStart = new Date(startDate);
 
-    // Generate periods from start date up to 12 months in the future
-    // Also include past periods (going back to capture history)
-    // First, go back to find the earliest relevant period
-    const earliestRelevantDate = addMonths(today, -24); // Show up to 2 years of history
-    
-    // Rewind to find the first period after our earliest date
-    while (isBefore(currentStart, earliestRelevantDate)) {
-      currentStart = addMonths(currentStart, monthsPerPeriod);
-    }
-    // Go back one more period to ensure we capture it
-    if (isAfter(currentStart, earliestRelevantDate)) {
-      currentStart = addMonths(currentStart, -monthsPerPeriod);
-    }
-
-    // Now generate periods until we exceed 12 months into the future
+    // Generate periods from the configured start date forward
+    // Only show periods up to 12 months into the future
     while (isBefore(currentStart, maxFutureDate)) {
       const periodEnd = addMonths(currentStart, monthsPerPeriod);
       periodEnd.setDate(periodEnd.getDate() - 1); // End on last day of period
