@@ -52,12 +52,17 @@ export default function IncentivesPage() {
     ? periods[currentPeriodIndex] 
     : null;
 
-  const fetchIncentives = async () => {
+  const fetchIncentives = async (periodStart: Date, periodEnd: Date) => {
     setLoading(true);
     try {
+      const periodStartStr = format(periodStart, "yyyy-MM-dd");
+      const periodEndStr = format(periodEnd, "yyyy-MM-dd");
+      
       const { data, error } = await supabase
         .from('incentives')
         .select('*')
+        .lte('valid_from', periodEndStr)
+        .gte('valid_to', periodStartStr)
         .order('numeric_id');
 
       if (error) {
@@ -73,8 +78,10 @@ export default function IncentivesPage() {
   };
 
   useEffect(() => {
-    fetchIncentives();
-  }, []);
+    if (currentPeriod) {
+      fetchIncentives(currentPeriod.startDate, currentPeriod.endDate);
+    }
+  }, [currentPeriod]);
 
   // Period is locked if status is "locked" or "currently running" or "past"
   const isPeriodLocked = currentPeriod?.status === "locked" || 
@@ -143,7 +150,9 @@ export default function IncentivesPage() {
       if (error) throw error;
       
       toast.success("Incentive deleted successfully");
-      fetchIncentives();
+      if (currentPeriod) {
+        fetchIncentives(currentPeriod.startDate, currentPeriod.endDate);
+      }
     } catch (error) {
       console.error('Error deleting incentive:', error);
       toast.error("Failed to delete incentive");
@@ -366,7 +375,7 @@ export default function IncentivesPage() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         incentive={selectedIncentive}
-        onSave={fetchIncentives}
+        onSave={() => currentPeriod && fetchIncentives(currentPeriod.startDate, currentPeriod.endDate)}
         mode={dialogMode}
         existingNames={incentives.map(i => i.name)}
       />
