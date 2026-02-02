@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Incentive } from "@/types/tripFilters";
 import { IncentiveEditDialog } from "@/components/IncentiveEditDialog";
 import { toast } from "sonner";
+import { format } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,28 +26,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-interface Quarter {
-  name: string;
-  startDate: string;
-  endDate: string;
-  status: "past" | "current" | "planned";
-}
-
-const quarters: Quarter[] = [
-  { name: "Q4 2023", startDate: "01/10/2023", endDate: "31/12/2023", status: "past" },
-  { name: "Q1 2024", startDate: "01/01/2024", endDate: "31/03/2024", status: "past" },
-  { name: "Q2 2024", startDate: "01/04/2024", endDate: "30/06/2024", status: "past" },
-  { name: "Q3 2024", startDate: "01/07/2024", endDate: "30/09/2024", status: "current" },
-  { name: "Q4 2024", startDate: "01/10/2024", endDate: "31/12/2024", status: "planned" },
-  { name: "Q1 2025", startDate: "01/01/2025", endDate: "31/03/2025", status: "planned" },
-];
+import { useIncentivePeriods, PeriodStatus } from "@/hooks/useIncentivePeriods";
 
 export default function IncentivesPage() {
-  const [currentQuarterIndex, setCurrentQuarterIndex] = useState(3);
+  const { periods, defaultPeriodIndex, isLoading: periodsLoading, settings } = useIncentivePeriods();
+  const [currentPeriodIndex, setCurrentPeriodIndex] = useState<number | null>(null);
   const [incentives, setIncentives] = useState<Incentive[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lockThresholdDays, setLockThresholdDays] = useState(90);
   
   // Dialog states
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -54,29 +40,30 @@ export default function IncentivesPage() {
   const [dialogMode, setDialogMode] = useState<"create" | "edit" | "copy">("create");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [incentiveToDelete, setIncentiveToDelete] = useState<Incentive | null>(null);
-  
-  const currentQuarter = quarters[currentQuarterIndex];
 
-  const fetchData = async () => {
+  // Set default period index when periods load
+  useEffect(() => {
+    if (periods.length > 0 && currentPeriodIndex === null) {
+      setCurrentPeriodIndex(defaultPeriodIndex);
+    }
+  }, [periods, defaultPeriodIndex, currentPeriodIndex]);
+  
+  const currentPeriod = currentPeriodIndex !== null && periods[currentPeriodIndex] 
+    ? periods[currentPeriodIndex] 
+    : null;
+
+  const fetchIncentives = async () => {
     setLoading(true);
     try {
-      // Fetch incentives and settings in parallel
-      const [incentivesResult, settingsResult] = await Promise.all([
-        supabase.from('incentives').select('*').order('numeric_id'),
-        supabase.from('account_settings').select('*').eq('setting_key', 'incentive_lock_threshold_days').maybeSingle()
-      ]);
+      const { data, error } = await supabase
+        .from('incentives')
+        .select('*')
+        .order('numeric_id');
 
-      if (incentivesResult.error) {
-        console.error('Error fetching incentives:', incentivesResult.error);
+      if (error) {
+        console.error('Error fetching incentives:', error);
       } else {
-        setIncentives(incentivesResult.data || []);
-      }
-
-      if (settingsResult.data) {
-        const value = typeof settingsResult.data.setting_value === 'number' 
-          ? settingsResult.data.setting_value 
-          : parseInt(String(settingsResult.data.setting_value)) || 90;
-        setLockThresholdDays(value);
+        setIncentives(data || []);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -86,40 +73,32 @@ export default function IncentivesPage() {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchIncentives();
   }, []);
 
-  const isIncentiveLocked = (incentive: Incentive): boolean => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const validFrom = new Date(incentive.valid_from);
-    validFrom.setHours(0, 0, 0, 0);
-    
-    // Lock if today > (valid_from - threshold_days)
-    const lockDate = new Date(validFrom);
-    lockDate.setDate(lockDate.getDate() - lockThresholdDays);
-    
-    return today > lockDate;
-  };
+  // Period is locked if status is "locked" or "currently running" or "past"
+  const isPeriodLocked = currentPeriod?.status === "locked" || 
+                         currentPeriod?.status === "currently running" || 
+                         currentPeriod?.status === "past";
 
   const goToPreviousPeriod = () => {
-    if (currentQuarterIndex > 0) {
-      setCurrentQuarterIndex(currentQuarterIndex - 1);
+    if (currentPeriodIndex !== null && currentPeriodIndex > 0) {
+      setCurrentPeriodIndex(currentPeriodIndex - 1);
     }
   };
 
   const goToNextPeriod = () => {
-    if (currentQuarterIndex < quarters.length - 1) {
-      setCurrentQuarterIndex(currentQuarterIndex + 1);
+    if (currentPeriodIndex !== null && currentPeriodIndex < periods.length - 1) {
+      setCurrentPeriodIndex(currentPeriodIndex + 1);
     }
   };
 
-  const getStatusVariant = (status: Quarter["status"]) => {
+  const getStatusVariant = (status: PeriodStatus): "secondary" | "default" | "outline" | "destructive" => {
     switch (status) {
       case "past": return "secondary";
-      case "current": return "default";
-      case "planned": return "outline";
+      case "currently running": return "default";
+      case "under construction": return "outline";
+      case "locked": return "destructive";
       default: return "secondary";
     }
   };
@@ -164,7 +143,7 @@ export default function IncentivesPage() {
       if (error) throw error;
       
       toast.success("Incentive deleted successfully");
-      fetchData();
+      fetchIncentives();
     } catch (error) {
       console.error('Error deleting incentive:', error);
       toast.error("Failed to delete incentive");
@@ -173,6 +152,20 @@ export default function IncentivesPage() {
       setIncentiveToDelete(null);
     }
   };
+
+  if (periodsLoading || !currentPeriod) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Incentives</h1>
+          <p className="text-muted-foreground">
+            Manage financial incentives for targeted mobility trips
+          </p>
+        </div>
+        <Skeleton className="h-48 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -183,7 +176,11 @@ export default function IncentivesPage() {
             Manage financial incentives for targeted mobility trips
           </p>
         </div>
-        <Button onClick={handleCreate} className="flex items-center gap-2">
+        <Button 
+          onClick={handleCreate} 
+          className="flex items-center gap-2"
+          disabled={isPeriodLocked}
+        >
           <Plus className="h-4 w-4" />
           Add Incentive
         </Button>
@@ -193,7 +190,7 @@ export default function IncentivesPage() {
         <CardHeader>
           <CardTitle>Period Selection</CardTitle>
           <CardDescription>
-            Navigate between quarters to view trip incentives
+            Navigate between incentive periods
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -201,7 +198,7 @@ export default function IncentivesPage() {
             <Button
               variant="ghost"
               onClick={goToPreviousPeriod}
-              disabled={currentQuarterIndex === 0}
+              disabled={currentPeriodIndex === 0}
               className="flex items-center gap-2"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -209,19 +206,19 @@ export default function IncentivesPage() {
             </Button>
             
             <div className="text-center">
-              <div className="text-lg font-semibold">{currentQuarter.name}</div>
+              <div className="text-lg font-semibold">{currentPeriod.name}</div>
               <div className="text-sm text-muted-foreground">
-                {currentQuarter.startDate} to {currentQuarter.endDate}
+                {format(currentPeriod.startDate, "dd/MM/yyyy")} to {format(currentPeriod.endDate, "dd/MM/yyyy")}
               </div>
-              <Badge variant={getStatusVariant(currentQuarter.status)} className="mt-2">
-                {currentQuarter.status}
+              <Badge variant={getStatusVariant(currentPeriod.status)} className="mt-2">
+                {currentPeriod.status}
               </Badge>
             </div>
 
             <Button
               variant="ghost"
               onClick={goToNextPeriod}
-              disabled={currentQuarterIndex === quarters.length - 1}
+              disabled={currentPeriodIndex === periods.length - 1}
               className="flex items-center gap-2"
             >
               Next period
@@ -235,10 +232,12 @@ export default function IncentivesPage() {
         <CardHeader>
           <CardTitle>Trip Incentives</CardTitle>
           <CardDescription>
-            Financial incentives for targeted trips in {currentQuarter.name}. 
-            <span className="text-muted-foreground ml-1">
-              (Incentives are locked {lockThresholdDays} days before their start date)
-            </span>
+            Financial incentives for targeted trips in {currentPeriod.name}
+            {isPeriodLocked && (
+              <span className="text-destructive ml-1">
+                (Period is {currentPeriod.status} - editing disabled)
+              </span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -267,21 +266,20 @@ export default function IncentivesPage() {
                 </TableHeader>
                 <TableBody>
                   {incentives.map((incentive) => {
-                    const locked = isIncentiveLocked(incentive);
                     return (
                       <TableRow 
                         key={incentive.id}
-                        className={locked ? "opacity-60 bg-muted/30" : ""}
+                        className={isPeriodLocked ? "opacity-60 bg-muted/30" : ""}
                       >
                         <TableCell className="font-mono text-muted-foreground">
                           <div className="flex items-center gap-2">
-                            {locked && (
+                            {isPeriodLocked && (
                               <Tooltip>
                                 <TooltipTrigger>
                                   <Lock className="h-3 w-3 text-muted-foreground" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  This incentive is locked and cannot be edited
+                                  This period is {currentPeriod.status}
                                 </TooltipContent>
                               </Tooltip>
                             )}
@@ -309,13 +307,13 @@ export default function IncentivesPage() {
                                   size="icon"
                                   className="h-8 w-8"
                                   onClick={() => handleEdit(incentive)}
-                                  disabled={locked}
+                                  disabled={isPeriodLocked}
                                 >
                                   <Pencil className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                {locked ? "Locked" : "Edit"}
+                                {isPeriodLocked ? "Period locked" : "Edit"}
                               </TooltipContent>
                             </Tooltip>
                             
@@ -326,11 +324,14 @@ export default function IncentivesPage() {
                                   size="icon"
                                   className="h-8 w-8"
                                   onClick={() => handleCopy(incentive)}
+                                  disabled={isPeriodLocked}
                                 >
                                   <Copy className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Copy</TooltipContent>
+                              <TooltipContent>
+                                {isPeriodLocked ? "Period locked" : "Copy"}
+                              </TooltipContent>
                             </Tooltip>
 
                             <Tooltip>
@@ -340,13 +341,13 @@ export default function IncentivesPage() {
                                   size="icon"
                                   className="h-8 w-8 text-destructive hover:text-destructive"
                                   onClick={() => handleDelete(incentive)}
-                                  disabled={locked}
+                                  disabled={isPeriodLocked}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                {locked ? "Locked" : "Delete"}
+                                {isPeriodLocked ? "Period locked" : "Delete"}
                               </TooltipContent>
                             </Tooltip>
                           </div>
@@ -365,7 +366,7 @@ export default function IncentivesPage() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         incentive={selectedIncentive}
-        onSave={fetchData}
+        onSave={fetchIncentives}
         mode={dialogMode}
         existingNames={incentives.map(i => i.name)}
       />
