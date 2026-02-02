@@ -1,52 +1,67 @@
 
 
-# Filter Incentives by Selected Period
+# Generate Q4 2025 Trip Data (October - December)
 
-## Problem
-The database was successfully updated with the correct date ranges for each incentive:
-- #1: Q3 2025 (Jul 1, 2025)
-- #2, #3: Q4 2025 (Oct 1, 2025)
-- #4, #5: Q2 2026 (Apr 1, 2026)
-- #6, #7, #8: Q3 2026 (Jul 1, 2026)
+## Overview
+Create 71,505 new trips for the October - December 2025 period with similar ratios to existing data but slightly adjusted survey distributions to reflect seasonal changes.
 
-However, the Incentives page displays ALL incentives regardless of which period is selected. The table should only show incentives that are valid within the currently selected period.
+## Trip Distribution (maintaining current ratios)
 
-## Solution
-Modify the `fetchIncentives` function to filter incentives based on the selected period's date range. An incentive should appear in a period if its validity window overlaps with that period.
+| Type | Count | Percentage |
+|------|-------|------------|
+| P.Bikes | ~51,000 | 71.3% |
+| E.Bikes | ~20,505 | 28.7% |
 
-## Changes Required
+**Provider breakdown:**
+- Donkey Republic: ~50% of P.Bikes, ~50% of E.Bikes
+- NextBike: ~50% of P.Bikes
+- Lime: ~50% of E.Bikes
 
-### File: `src/pages/IncentivesPage.tsx`
+## Adjusted Survey Distribution (Q4 seasonal variation)
 
-1. **Update `fetchIncentives` to accept period dates** - Pass `currentPeriod.startDate` and `currentPeriod.endDate` to filter results
+| Previous Mode | Q3 2025 (current) | Q4 2025 (new) |
+|---------------|-------------------|---------------|
+| Rail | 30% | 27% |
+| Bus | 20% | 18% |
+| Walking | 15% | 12% |
+| Car | 7% | 10% |
+| New trip | 11% | 14% |
+| Cycling | 12% | 10% |
+| Scooter/moped | 5% | 9% |
 
-2. **Add date-based filtering** - Filter incentives where:
-   - `valid_from <= period.endDate` AND
-   - `valid_to >= period.startDate`
-   
-   This captures any incentive whose validity window overlaps with the period.
+The adjustments reflect colder weather behavior: less walking/cycling replaced, more car and new trips.
 
-3. **Re-fetch when period changes** - Add `currentPeriod` as a dependency to the useEffect that calls `fetchIncentives`
+## Implementation
+
+### 1. Create new edge function: `seed-q4-trips`
+
+**File:** `supabase/functions/seed-q4-trips/index.ts`
+
+This function will:
+- Generate 71,505 trips for October 1 - December 31, 2025
+- Use same Copenhagen location data as existing seed function
+- Maintain similar time-of-day patterns (rush hour emphasis for E.Bikes)
+- Insert trips in batches of 1,000 to avoid timeouts
+- Automatically generate 10% surveys with adjusted mode distribution
+
+### 2. Update config.toml
+
+Add function configuration with `verify_jwt = false` for easy invocation.
 
 ---
 
 ## Technical Details
 
-The filtering logic ensures an incentive appears in a period if there's any overlap:
-
 ```text
-Period:          |-------- Q3 2025 --------|
-Incentive #1:    |=========================| (valid_from: Jul 1, valid_to: Sep 30)
-                 ↑ Overlaps - SHOW
+Date Range: 2025-10-01 to 2025-12-31
+Total Trips: 71,505
+  - P.Bikes: 51,000 (human propulsion)
+  - E.Bikes: 20,505 (electric_assist)
 
-Period:          |-------- Q3 2025 --------|
-Incentive #2:                                |=====| (valid_from: Oct 1)
-                                             ↑ No overlap - HIDE
+Surveys: ~7,150 (10% of trips)
+  - Stored in trip_surveys table
+  - Uses Q4-specific mode distribution
 ```
 
-The SQL query will use:
-```sql
-.lte('valid_from', periodEndDate)
-.gte('valid_to', periodStartDate)
-```
+The edge function will use background processing via `EdgeRuntime.waitUntil()` to handle the large batch without timing out.
 
