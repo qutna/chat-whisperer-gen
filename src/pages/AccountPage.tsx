@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ImpactRateSettingsMatrix } from "@/components/ImpactRateSettingsMatrix";
 import { RushHourSettingsEditor } from "@/components/RushHourSettingsEditor";
 import { UrbanAreaEditor } from "@/components/UrbanAreaEditor";
+import { IncentiveSettingsEditor } from "@/components/IncentiveSettingsEditor";
 
 export default function AccountPage() {
   return (
@@ -27,6 +28,15 @@ export default function AccountPage() {
             </p>
           </CardContent>
         </Card>
+
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold">Incentive Settings</h2>
+          <p className="text-sm text-muted-foreground">
+            Configure incentive periods and locking behavior
+          </p>
+        </div>
+
+        <IncentiveSettingsEditor />
 
         <div className="space-y-2">
           <h2 className="text-xl font-semibold">Impact Calculation Settings</h2>
