@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.seed-q4-trips]
 verify_jwt = false
+
+[functions.seed-cargo-bike-trips]
+verify_jwt = false
