@@ -233,7 +233,7 @@ export default function IncentivesPage() {
           <CardTitle>Trip Incentives</CardTitle>
           <CardDescription>
             Financial incentives for targeted trips in {currentPeriod.name}
-            {isPeriodLocked && (
+            {isPeriodLocked && currentPeriod.status !== "past" && (
               <span className="text-destructive ml-1">
                 (Period is {currentPeriod.status} - editing disabled)
               </span>
