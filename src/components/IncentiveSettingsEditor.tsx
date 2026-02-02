@@ -200,20 +200,6 @@ export function IncentiveSettingsEditor() {
           </p>
         </div>
 
-        {/* Status Display */}
-        <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
-          <h4 className="font-medium">Current Status</h4>
-          <div className="grid gap-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Next incentive period starts:</span>
-              <span className="font-medium">{format(nextPeriod, "MMMM d, yyyy")}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Next lock date:</span>
-              <span className="font-medium">{format(lockDate, "MMMM d, yyyy")}</span>
-            </div>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
