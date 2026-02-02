@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ImpactResults } from "@/hooks/useImpactCalculations";
+import { ImpactDrilldownDialog } from "@/components/ImpactDrilldownDialog";
 import { Car, TrafficCone, Leaf, DoorOpen, Heart, Euro } from "lucide-react";
+
+type MetricKey = "space" | "congestion" | "co2" | "access" | "health";
 
 interface ImpactMetricsProps {
   data: ImpactResults | undefined;
@@ -14,6 +18,7 @@ interface ImpactCardProps {
   icon: React.ReactNode;
   description: string;
   isTotal?: boolean;
+  onClick?: () => void;
 }
 
 function formatEuro(value: number): string {
@@ -28,11 +33,17 @@ function formatEuro(value: number): string {
   return `${sign}€${absValue.toFixed(0)}`;
 }
 
-function ImpactCard({ title, value, icon, description, isTotal }: ImpactCardProps) {
+function ImpactCard({ title, value, icon, description, isTotal, onClick }: ImpactCardProps) {
   const isPositive = value >= 0;
+  const isClickable = !!onClick;
   
   return (
-    <Card className={isTotal ? "border-primary bg-primary/5" : ""}>
+    <Card 
+      className={`${isTotal ? "border-primary bg-primary/5" : ""} ${
+        isClickable ? "cursor-pointer transition-all hover:shadow-md hover:border-primary/50" : ""
+      }`}
+      onClick={onClick}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
@@ -55,13 +66,18 @@ function ImpactCard({ title, value, icon, description, isTotal }: ImpactCardProp
         }`}>
           {formatEuro(value)}
         </div>
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {description}
+          {isClickable && <span className="ml-1 opacity-60">• Click for details</span>}
+        </p>
       </CardContent>
     </Card>
   );
 }
 
 export function ImpactMetrics({ data, isLoading }: ImpactMetricsProps) {
+  const [selectedMetric, setSelectedMetric] = useState<MetricKey | null>(null);
+  
   if (isLoading) {
     return (
       <Card>
@@ -96,57 +112,73 @@ export function ImpactMetrics({ data, isLoading }: ImpactMetricsProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Impact Metrics</span>
-          <span className="text-sm font-normal text-muted-foreground">
-            Based on {data.totalTrips.toLocaleString()} surveyed trips 
-            ({data.totalDistanceKm.toLocaleString()} km)
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <ImpactCard
-            title="Space Savings"
-            value={data.space}
-            icon={<Car className="h-4 w-4" />}
-            description="Land use benefit"
-          />
-          <ImpactCard
-            title="Congestion"
-            value={data.congestion}
-            icon={<TrafficCone className="h-4 w-4" />}
-            description="Traffic reduction"
-          />
-          <ImpactCard
-            title="CO₂ Reduction"
-            value={data.co2}
-            icon={<Leaf className="h-4 w-4" />}
-            description="Emissions avoided"
-          />
-          <ImpactCard
-            title="Access"
-            value={data.access}
-            icon={<DoorOpen className="h-4 w-4" />}
-            description="Mobility access"
-          />
-          <ImpactCard
-            title="Health Benefits"
-            value={data.health}
-            icon={<Heart className="h-4 w-4" />}
-            description="Active transport"
-          />
-          <ImpactCard
-            title="Total Net Impact"
-            value={data.total}
-            icon={<Euro className="h-4 w-4" />}
-            description="Combined value"
-            isTotal
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Impact Metrics</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              Based on {data.totalTrips.toLocaleString()} surveyed trips 
+              ({data.totalDistanceKm.toLocaleString()} km)
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <ImpactCard
+              title="Space Savings"
+              value={data.space}
+              icon={<Car className="h-4 w-4" />}
+              description="Land use benefit"
+              onClick={() => setSelectedMetric("space")}
+            />
+            <ImpactCard
+              title="Congestion"
+              value={data.congestion}
+              icon={<TrafficCone className="h-4 w-4" />}
+              description="Traffic reduction"
+              onClick={() => setSelectedMetric("congestion")}
+            />
+            <ImpactCard
+              title="CO₂ Reduction"
+              value={data.co2}
+              icon={<Leaf className="h-4 w-4" />}
+              description="Emissions avoided"
+              onClick={() => setSelectedMetric("co2")}
+            />
+            <ImpactCard
+              title="Access"
+              value={data.access}
+              icon={<DoorOpen className="h-4 w-4" />}
+              description="Mobility access"
+              onClick={() => setSelectedMetric("access")}
+            />
+            <ImpactCard
+              title="Health Benefits"
+              value={data.health}
+              icon={<Heart className="h-4 w-4" />}
+              description="Active transport"
+              onClick={() => setSelectedMetric("health")}
+            />
+            <ImpactCard
+              title="Total Net Impact"
+              value={data.total}
+              icon={<Euro className="h-4 w-4" />}
+              description="Combined value"
+              isTotal
+            />
+          </div>
+        </CardContent>
+      </Card>
+      
+      <ImpactDrilldownDialog
+        metricKey={selectedMetric}
+        data={data}
+        open={selectedMetric !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedMetric(null);
+        }}
+      />
+    </>
   );
 }

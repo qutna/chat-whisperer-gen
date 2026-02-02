@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TripFilters, getMonthsFromDateRange } from "@/types/tripFilters";
-import { ImpactRates, MODE_TO_RATE_KEY, calculateNetImpact, BIKE_RATES as DEFAULT_BIKE_RATES } from "@/data/impactRates";
+import { ImpactRates, MODE_TO_RATE_KEY, BIKE_RATES as DEFAULT_BIKE_RATES } from "@/data/impactRates";
 
 interface ImpactCalculationData {
   previous_mode: string;
@@ -24,6 +24,34 @@ interface ImpactRateSetting {
   health: number;
 }
 
+// Mode labels for display
+const MODE_LABELS: Record<string, string> = {
+  car: "Car",
+  bus: "Bus",
+  rail: "Rail",
+  scooter_moped: "Scooter/Moped",
+  cycling: "Cycling",
+  walking: "Walking",
+  new_trip: "New Trip",
+  other: "Other",
+};
+
+export interface ModeBreakdown {
+  mode: string;
+  modeLabel: string;
+  distanceKm: number;
+  tripCount: number;
+  urbanPercent: number;
+  rushHourPercent: number;
+  impacts: {
+    space: number;
+    congestion: number;
+    co2: number;
+    access: number;
+    health: number;
+  };
+}
+
 export interface ImpactResults {
   space: number;
   congestion: number;
@@ -33,6 +61,9 @@ export interface ImpactResults {
   total: number;
   totalTrips: number;
   totalDistanceKm: number;
+  breakdown: ModeBreakdown[];
+  avgUrbanPercent: number;
+  avgRushHourPercent: number;
 }
 
 function convertSettingToRates(setting: ImpactRateSetting): ImpactRates {
@@ -109,6 +140,13 @@ export function useImpactCalculations(filters: TripFilters) {
       let totalHealth = 0;
       let totalTrips = 0;
       let totalDistanceKm = 0;
+      
+      // For weighted averages
+      let weightedUrbanSum = 0;
+      let weightedRushHourSum = 0;
+      
+      // Per-mode breakdown
+      const breakdown: ModeBreakdown[] = [];
 
       // Process each mode shift category
       for (const row of (data as ImpactCalculationData[]) || []) {
@@ -134,7 +172,33 @@ export function useImpactCalculations(filters: TripFilters) {
         totalHealth += impacts.health;
         totalTrips += row.extrapolated_trip_count;
         totalDistanceKm += row.extrapolated_distance_km;
+        
+        // Weighted averages
+        weightedUrbanSum += row.avg_urban_percent * row.extrapolated_distance_km;
+        weightedRushHourSum += row.avg_rush_hour_percent * row.extrapolated_distance_km;
+        
+        // Add to breakdown
+        breakdown.push({
+          mode: row.previous_mode,
+          modeLabel: MODE_LABELS[row.previous_mode] || row.previous_mode,
+          distanceKm: row.extrapolated_distance_km,
+          tripCount: row.extrapolated_trip_count,
+          urbanPercent: row.avg_urban_percent,
+          rushHourPercent: row.avg_rush_hour_percent,
+          impacts,
+        });
       }
+      
+      // Calculate weighted averages
+      const avgUrbanPercent = totalDistanceKm > 0 ? weightedUrbanSum / totalDistanceKm : 0;
+      const avgRushHourPercent = totalDistanceKm > 0 ? weightedRushHourSum / totalDistanceKm : 0;
+      
+      // Sort breakdown by absolute impact (largest first)
+      breakdown.sort((a, b) => {
+        const aTotal = Math.abs(a.impacts.space + a.impacts.congestion + a.impacts.co2 + a.impacts.access + a.impacts.health);
+        const bTotal = Math.abs(b.impacts.space + b.impacts.congestion + b.impacts.co2 + b.impacts.access + b.impacts.health);
+        return bTotal - aTotal;
+      });
 
       return {
         space: totalSpace,
@@ -145,6 +209,9 @@ export function useImpactCalculations(filters: TripFilters) {
         total: totalSpace + totalCongestion + totalCo2 + totalAccess + totalHealth,
         totalTrips,
         totalDistanceKm,
+        breakdown,
+        avgUrbanPercent,
+        avgRushHourPercent,
       };
     },
   });
