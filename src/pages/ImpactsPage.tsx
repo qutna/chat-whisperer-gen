@@ -4,21 +4,10 @@ import { ModeShiftSankey } from "@/components/ModeShiftSankey";
 import { ImpactMetrics } from "@/components/ImpactMetrics";
 import { useModeShifts } from "@/hooks/useModeShifts";
 import { useImpactCalculations } from "@/hooks/useImpactCalculations";
-import { TripFilters } from "@/types/tripFilters";
+import { TripFilters, getDefaultFilters } from "@/types/tripFilters";
 
 export default function ImpactsPage() {
-  const [filters, setFilters] = useState<TripFilters>({
-    incentiveIds: [],
-    startDate: null,
-    endDate: null,
-    providers: [],
-    vehicleTypes: [],
-    daysOfWeek: [],
-    timeSlots: [],
-    durationBuckets: [],
-    startLocationFilter: null,
-    endLocationFilter: null,
-  });
+  const [filters, setFilters] = useState<TripFilters>(getDefaultFilters);
 
   const { data: sankeyData, isLoading: sankeyLoading } = useModeShifts(filters);
   const { data: impactData, isLoading: impactLoading } = useImpactCalculations(filters);
