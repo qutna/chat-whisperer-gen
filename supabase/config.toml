@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.link-trips-to-incentives]
 verify_jwt = false
+
+[functions.seed-q4-trips]
+verify_jwt = false
