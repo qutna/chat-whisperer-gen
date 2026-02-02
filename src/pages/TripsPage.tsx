@@ -4,22 +4,11 @@ import { GlobalFilters } from "@/components/GlobalFilters";
 import { GraphView } from "@/components/GraphView";
 import { MapView } from "@/components/MapView";
 import { DownloadDataView } from "@/components/DownloadDataView";
-import { TripFilters } from "@/types/tripFilters";
+import { TripFilters, getDefaultFilters } from "@/types/tripFilters";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function TripsPage() {
-  const [filters, setFilters] = useState<TripFilters>({
-    incentiveIds: [],
-    startDate: null,
-    endDate: null,
-    providers: [],
-    vehicleTypes: [],
-    daysOfWeek: [],
-    timeSlots: [],
-    durationBuckets: [],
-    startLocationFilter: null,
-    endLocationFilter: null,
-  });
+  const [filters, setFilters] = useState<TripFilters>(getDefaultFilters);
   
   const [dimension, setDimension] = useState("month");
   const [metric, setMetric] = useState("count");

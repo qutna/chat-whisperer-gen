@@ -1,3 +1,5 @@
+import { subDays, startOfDay } from "date-fns";
+
 export interface LocationFilter {
   lat: number;
   lng: number;
@@ -15,6 +17,24 @@ export interface TripFilters {
   durationBuckets: string[];
   startLocationFilter: LocationFilter | null;
   endLocationFilter: LocationFilter | null;
+}
+
+export function getDefaultFilters(): TripFilters {
+  const today = startOfDay(new Date());
+  const ninetyDaysAgo = subDays(today, 90);
+  
+  return {
+    incentiveIds: [],
+    startDate: ninetyDaysAgo,
+    endDate: today,
+    providers: [],
+    vehicleTypes: [],
+    daysOfWeek: [],
+    timeSlots: [],
+    durationBuckets: [],
+    startLocationFilter: null,
+    endLocationFilter: null,
+  };
 }
 
 export const RADIUS_OPTIONS = [

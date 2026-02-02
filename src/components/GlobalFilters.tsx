@@ -116,47 +116,8 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
         <CardTitle>Filter</CardTitle>
       </CardHeader>
       <CardContent>
-        <Accordion type="multiple" className="w-full">
-          {/* Incentives - TOP FILTER */}
-          <AccordionItem value="incentives">
-            <AccordionTrigger className="text-sm font-semibold">Incentives</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {/* No Incentive option */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="incentive-none"
-                    checked={filters.incentiveIds.includes('none')}
-                    onCheckedChange={() => toggleFilter('incentiveIds', 'none')}
-                  />
-                  <label
-                    htmlFor="incentive-none"
-                    className="text-sm cursor-pointer truncate flex-1 italic text-muted-foreground"
-                  >
-                    No Incentive
-                  </label>
-                </div>
-                {/* Incentive options */}
-                {availableIncentives.map(incentive => (
-                  <div key={incentive.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`incentive-${incentive.id}`}
-                      checked={filters.incentiveIds.includes(incentive.id)}
-                      onCheckedChange={() => toggleFilter('incentiveIds', incentive.id)}
-                    />
-                    <label
-                      htmlFor={`incentive-${incentive.id}`}
-                      className="text-sm cursor-pointer truncate flex-1"
-                    >
-                      {incentive.numeric_id} - {incentive.brief_name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* Period (Date Range) */}
+        <Accordion type="multiple" defaultValue={["period"]} className="w-full">
+          {/* Period (Date Range) - TOP FILTER */}
           <AccordionItem value="period">
             <AccordionTrigger className="text-sm font-semibold">Period</AccordionTrigger>
             <AccordionContent>
@@ -223,6 +184,45 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
                     Clear dates
                   </Button>
                 )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Incentives */}
+          <AccordionItem value="incentives">
+            <AccordionTrigger className="text-sm font-semibold">Incentives</AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {/* No Incentive option */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="incentive-none"
+                    checked={filters.incentiveIds.includes('none')}
+                    onCheckedChange={() => toggleFilter('incentiveIds', 'none')}
+                  />
+                  <label
+                    htmlFor="incentive-none"
+                    className="text-sm cursor-pointer truncate flex-1 italic text-muted-foreground"
+                  >
+                    No Incentive
+                  </label>
+                </div>
+                {/* Incentive options */}
+                {availableIncentives.map(incentive => (
+                  <div key={incentive.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`incentive-${incentive.id}`}
+                      checked={filters.incentiveIds.includes(incentive.id)}
+                      onCheckedChange={() => toggleFilter('incentiveIds', incentive.id)}
+                    />
+                    <label
+                      htmlFor={`incentive-${incentive.id}`}
+                      className="text-sm cursor-pointer truncate flex-1"
+                    >
+                      {incentive.numeric_id} - {incentive.brief_name}
+                    </label>
+                  </div>
+                ))}
               </div>
             </AccordionContent>
           </AccordionItem>
