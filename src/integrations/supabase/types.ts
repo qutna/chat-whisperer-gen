@@ -376,6 +376,31 @@ export type Database = {
           trip_count: number
         }[]
       }
+      get_incentive_trip_summary: {
+        Args: {
+          p_end_lat?: number
+          p_end_lng?: number
+          p_end_radius_meters?: number
+          p_filter_days_of_week?: number[]
+          p_filter_duration_buckets?: string[]
+          p_filter_incentive_ids?: string[]
+          p_filter_months?: string[]
+          p_filter_providers?: string[]
+          p_filter_time_slots?: string[]
+          p_filter_vehicle_types?: string[]
+          p_start_lat?: number
+          p_start_lng?: number
+          p_start_radius_meters?: number
+        }
+        Returns: {
+          incentive_amount: number
+          incentive_id: string
+          incentive_name: string
+          numeric_id: number
+          total_earnings: number
+          trip_count: number
+        }[]
+      }
       get_mode_shift_data: {
         Args: {
           p_end_lat?: number

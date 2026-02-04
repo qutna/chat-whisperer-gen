@@ -4,6 +4,7 @@ import { GlobalFilters } from "@/components/GlobalFilters";
 import { GraphView } from "@/components/GraphView";
 import { MapView } from "@/components/MapView";
 import { DownloadDataView } from "@/components/DownloadDataView";
+import { IncentiveTripSummary } from "@/components/IncentiveTripSummary";
 import { TripFilters, getDefaultFilters } from "@/types/tripFilters";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -57,6 +58,8 @@ export default function TripsPage() {
 
         <div className="lg:col-span-3">
           <div className="space-y-4">
+            <IncentiveTripSummary filters={filters} />
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">X-Axis Dimension</label>
