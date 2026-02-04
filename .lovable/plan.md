@@ -1,61 +1,50 @@
 
 
-# Fix Incentive Linking for Q4 2025 Trips
+# Fix Impact Metrics: Enable PostGIS Extension
 
 ## Problem Identified
-The `link-trips-to-incentives` edge function has a critical flaw: it **resets all incentive_ids to NULL** at the start of each run, then times out before re-linking all trips. This causes data loss with each execution attempt.
 
-Current state after multiple failed runs:
-| Quarter | Vehicle Type | Has Incentive | No Incentive |
-|---------|--------------|---------------|--------------|
-| Q3 2025 | bicycle | ~10,000 | ~92,000 |
-| Q4 2025 | bicycle | ~6,000 | ~65,000 |
-| Q4 2025 | cargo_bike | 0 | 25,000 |
-
----
-
-## Solution: Two-Step Fix
-
-### Step 1: Optimized Direct SQL Linking (Immediate)
-Create a SQL migration that directly links trips to incentives without the timeout issues. This will:
-- Link all bicycle trips (Q3 + Q4 2025) to the "1 - Bike Sharing" incentive
-- Link all cargo_bike trips (Q4 2025) to the "2 - Cargo Bike Lease" incentive
-- Execute in seconds rather than timing out
-
-### Step 2: Fix Edge Function (Prevent Future Issues)
-Update `link-trips-to-incentives` to remove the destructive reset behavior so future runs only link unlinked trips instead of starting from scratch.
-
----
-
-## What Will Happen
-
-**SQL Migration Logic:**
-```sql
--- Link bicycle trips to Bike Sharing incentive (numeric_id = 1)
-UPDATE trips 
-SET incentive_id = (SELECT id FROM incentives WHERE numeric_id = 1)
-WHERE vehicle_type = 'bicycle' 
-  AND incentive_id IS NULL;
-
--- Link cargo_bike trips to Cargo Bike Lease incentive (numeric_id = 2)
-UPDATE trips 
-SET incentive_id = (SELECT id FROM incentives WHERE numeric_id = 2)
-WHERE vehicle_type = 'cargo_bike' 
-  AND incentive_id IS NULL;
+The Impact Metrics and Mode Shift Sankey are failing with the error:
+```
+type "geography" does not exist
 ```
 
-**Edge Function Fix (link-trips-to-incentives/index.ts):**
-- Remove the reset loop (lines 36-49) that clears all incentive_ids
-- Keep the rest of the logic that only updates trips with `incentive_id IS NULL`
+This occurs because the database functions `get_impact_calculation_data` and `get_mode_shift_data` use PostGIS spatial functions for location-based filtering, but **the PostGIS extension was never enabled**.
+
+| Function | PostGIS Usage |
+|----------|---------------|
+| `get_impact_calculation_data` | `ST_DWithin`, `ST_MakePoint`, `ST_SetSRID`, `::geography` |
+| `get_mode_shift_data` | `ST_DWithin`, `ST_MakePoint`, `ST_SetSRID`, `::geography` |
+
+These functions use PostGIS to filter trips by start/end location radius, but since the extension isn't installed, any call to these functions fails - even when location filters aren't being used.
 
 ---
 
-## Expected Results After Fix
-| Quarter | Vehicle Type | Linked Incentive |
-|---------|--------------|------------------|
-| Q3 2025 | bicycle | 1 - Bike Sharing |
-| Q4 2025 | bicycle | 1 - Bike Sharing |
-| Q4 2025 | cargo_bike | 2 - Cargo Bike Lease |
+## Solution
 
-All ~198,000 trips will be properly linked to their respective incentives, and filtering for "1 - Bike Sharing" in the Trips tab will show the expected results.
+Enable the PostGIS extension in the database. This is a simple one-line migration that will:
+1. Install the PostGIS extension
+2. Make the `geography` type and spatial functions available
+3. Allow the existing database functions to execute properly
+
+---
+
+## What Will Change
+
+### Database Migration
+A single SQL statement to enable PostGIS:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA extensions;
+```
+
+No code changes are required - the database functions already use PostGIS correctly, they just need the extension to be available.
+
+---
+
+## Expected Result
+After applying this fix:
+- Impact Metrics will display correctly on the Impacts page
+- Mode Shift Sankey diagram will load and show data
+- Location-based filtering will work properly throughout the application
 
