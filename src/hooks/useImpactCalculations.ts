@@ -147,6 +147,9 @@ export function useImpactCalculations(filters: TripFilters) {
       
       // Per-mode breakdown
       const breakdown: ModeBreakdown[] = [];
+      
+      // Fixed access value for new trips (EUR per new trip)
+      const NEW_TRIP_ACCESS_VALUE = 2;
 
       // Process each mode shift category
       for (const row of (data as ImpactCalculationData[]) || []) {
@@ -164,6 +167,11 @@ export function useImpactCalculations(filters: TripFilters) {
           row.avg_urban_percent,
           row.avg_rush_hour_percent
         );
+        
+        // For "new_trip" mode, override access with fixed €2 per trip
+        if (row.previous_mode === "new_trip") {
+          impacts.access = row.extrapolated_trip_count * NEW_TRIP_ACCESS_VALUE;
+        }
 
         totalSpace += impacts.space;
         totalCongestion += impacts.congestion;
