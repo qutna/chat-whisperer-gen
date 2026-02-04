@@ -30,28 +30,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     console.log("Starting trip-to-incentive linking...");
-
-    // First, reset all incentive_ids
-    console.log("Resetting all incentive_ids...");
-    let resetCount = 0;
-    let hasMoreToReset = true;
-    while (hasMoreToReset) {
-      const { data: toReset } = await supabase
-        .from("trips")
-        .select("trip_id")
-        .not("incentive_id", "is", null)
-        .limit(500);
-      
-      if (!toReset || toReset.length === 0) {
-        hasMoreToReset = false;
-        break;
-      }
-      
-      const ids = toReset.map((t: any) => t.trip_id);
-      await supabase.from("trips").update({ incentive_id: null }).in("trip_id", ids);
-      resetCount += ids.length;
-    }
-    console.log(`Reset complete: ${resetCount} trips`);
+    console.log("Processing only unlinked trips (incentive_id IS NULL)...");
 
     // Fetch all incentives
     const { data: incentives, error: incentivesError } = await supabase
