@@ -19,7 +19,11 @@ const NODE_COLORS: Record<string, string> = {
   "* New Trip": "hsl(220, 9%, 46%)",     // Gray - induced demand
   "P-Bike": "hsl(173, 80%, 40%)",        // Teal
   "E-Bike": "hsl(187, 85%, 43%)",        // Cyan
+  "Cargo Bike": "hsl(280, 65%, 50%)",    // Purple - cargo bike
 };
+
+// Target bike types for positioning labels on the right side
+const TARGET_BIKE_TYPES = ["P-Bike", "E-Bike", "Cargo Bike"];
 
 interface CustomNodeProps {
   x: number;
@@ -35,7 +39,7 @@ interface CustomNodeProps {
 }
 
 const CustomNode = ({ x, y, width, height, payload }: CustomNodeProps) => {
-  const isTarget = payload.name === "P-Bike" || payload.name === "E-Bike";
+  const isTarget = TARGET_BIKE_TYPES.includes(payload.name);
   const color = NODE_COLORS[payload.name] || "hsl(220, 9%, 46%)";
   
   return (

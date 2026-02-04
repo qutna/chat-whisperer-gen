@@ -87,9 +87,20 @@ export function useModeShifts(filters: TripFilters) {
         sortedModes.push("new_trip");
       }
 
-      // Build nodes: sorted sources + 2 targets
-      const pBikeIndex = sortedModes.length;
-      const eBikeIndex = sortedModes.length + 1;
+      // Discover unique bike types from the data
+      const bikeTypesSet = new Set<string>();
+      modeShiftData.forEach((row) => {
+        if (row.bike_type) {
+          bikeTypesSet.add(row.bike_type);
+        }
+      });
+      
+      // Sort bike types for consistent ordering: Cargo Bike, E-Bike, P-Bike
+      const bikeTypeOrder = ["Cargo Bike", "E-Bike", "P-Bike"];
+      const bikeTypes = bikeTypeOrder.filter((bt) => bikeTypesSet.has(bt));
+      
+      // Build nodes: sorted sources + dynamic target bike types
+      const targetStartIndex = sortedModes.length;
       
       const nodes: SankeyNode[] = [
         ...sortedModes.map((mode) => ({
@@ -97,18 +108,28 @@ export function useModeShifts(filters: TripFilters) {
           value: modeTotals[mode] || 0,
           percentage: totalTrips > 0 ? ((modeTotals[mode] || 0) / totalTrips) * 100 : 0,
         })),
-        { name: "P-Bike", value: 0, percentage: 0 },
-        { name: "E-Bike", value: 0, percentage: 0 },
+        ...bikeTypes.map((bikeType) => ({
+          name: bikeType,
+          value: 0,
+          percentage: 0,
+        })),
       ];
 
       // Calculate target totals
       modeShiftData.forEach((row) => {
         const value = Math.round(row.extrapolated_count);
-        const targetNode = row.bike_type === "P-Bike" ? nodes[pBikeIndex] : nodes[eBikeIndex];
-        targetNode.value = (targetNode.value || 0) + value;
+        const bikeTypeIndex = bikeTypes.indexOf(row.bike_type);
+        if (bikeTypeIndex !== -1) {
+          const targetNode = nodes[targetStartIndex + bikeTypeIndex];
+          targetNode.value = (targetNode.value || 0) + value;
+        }
       });
-      nodes[pBikeIndex].percentage = totalTrips > 0 ? ((nodes[pBikeIndex].value || 0) / totalTrips) * 100 : 0;
-      nodes[eBikeIndex].percentage = totalTrips > 0 ? ((nodes[eBikeIndex].value || 0) / totalTrips) * 100 : 0;
+      
+      // Calculate percentages for target nodes
+      bikeTypes.forEach((_, i) => {
+        const nodeIndex = targetStartIndex + i;
+        nodes[nodeIndex].percentage = totalTrips > 0 ? ((nodes[nodeIndex].value || 0) / totalTrips) * 100 : 0;
+      });
 
       // Build links from the data
       const links: SankeyLink[] = [];
@@ -117,7 +138,10 @@ export function useModeShifts(filters: TripFilters) {
         const sourceIndex = sortedModes.indexOf(row.previous_mode);
         if (sourceIndex === -1) return;
 
-        const targetIndex = row.bike_type === "P-Bike" ? pBikeIndex : eBikeIndex;
+        const bikeTypeIndex = bikeTypes.indexOf(row.bike_type);
+        if (bikeTypeIndex === -1) return;
+        
+        const targetIndex = targetStartIndex + bikeTypeIndex;
         const value = Math.round(row.extrapolated_count);
 
         if (value > 0) {
