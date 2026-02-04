@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GlobalFilters } from "@/components/GlobalFilters";
 import { GraphView } from "@/components/GraphView";
 import { MapView } from "@/components/MapView";
@@ -12,9 +11,6 @@ import { Info } from "lucide-react";
 
 export default function TripsPage() {
   const [filters, setFilters] = useState<TripFilters>(getDefaultFilters);
-  
-  const [dimension, setDimension] = useState("month");
-  const [metric, setMetric] = useState("count");
 
   return (
     <div className="space-y-6">
@@ -59,44 +55,8 @@ export default function TripsPage() {
         <div className="lg:col-span-3">
           <div className="space-y-4">
             <IncentiveTripSummary filters={filters} />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">X-Axis Dimension</label>
-                <Select value={dimension} onValueChange={setDimension}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="month">Month</SelectItem>
-                    <SelectItem value="provider_name">Operator</SelectItem>
-                    <SelectItem value="bike_type">Bike Type</SelectItem>
-                    <SelectItem value="day_of_week">Day of Week</SelectItem>
-                    <SelectItem value="time_of_day">Time of Day</SelectItem>
-                    <SelectItem value="duration_bucket">Trip Duration</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Y-Axis Metric</label>
-                <Select value={metric} onValueChange={setMetric}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="count">Trip Count</SelectItem>
-                    <SelectItem value="total_distance">Total Distance</SelectItem>
-                    <SelectItem value="avg_distance">Average Distance</SelectItem>
-                    <SelectItem value="total_duration">Total Duration</SelectItem>
-                    <SelectItem value="avg_duration">Average Duration</SelectItem>
-                    <SelectItem value="total_cost">Total Cost</SelectItem>
-                    <SelectItem value="avg_cost">Average Cost</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
 
-            <GraphView filters={filters} dimension={dimension} metric={metric} />
+            <GraphView filters={filters} />
 
             <Card className="mt-6">
               <CardHeader>

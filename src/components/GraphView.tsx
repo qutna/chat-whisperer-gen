@@ -8,8 +8,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 interface GraphViewProps {
   filters: TripFilters;
-  dimension: string;
-  metric: string;
 }
 
 interface ReportData {
@@ -17,9 +15,11 @@ interface ReportData {
   value: number;
 }
 
-export function GraphView({ filters, dimension, metric }: GraphViewProps) {
+export function GraphView({ filters }: GraphViewProps) {
   const [data, setData] = useState<ReportData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dimension, setDimension] = useState("provider_name");
+  const [metric, setMetric] = useState("count");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,6 +98,41 @@ export function GraphView({ filters, dimension, metric }: GraphViewProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">X-Axis</label>
+            <Select value={dimension} onValueChange={setDimension}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="provider_name">Operator</SelectItem>
+                <SelectItem value="month">Month</SelectItem>
+                <SelectItem value="bike_type">Bike Type</SelectItem>
+                <SelectItem value="day_of_week">Day of Week</SelectItem>
+                <SelectItem value="time_of_day">Time of Day</SelectItem>
+                <SelectItem value="duration_bucket">Trip Duration</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Y-Axis</label>
+            <Select value={metric} onValueChange={setMetric}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="count">Trip Count</SelectItem>
+                <SelectItem value="total_distance">Total Distance</SelectItem>
+                <SelectItem value="avg_distance">Average Distance</SelectItem>
+                <SelectItem value="total_duration">Total Duration</SelectItem>
+                <SelectItem value="avg_duration">Average Duration</SelectItem>
+                <SelectItem value="total_cost">Total Cost</SelectItem>
+                <SelectItem value="avg_cost">Average Cost</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         {loading ? (
           <div className="space-y-2">
