@@ -77,8 +77,8 @@ const AVG_DISTANCE_KM = 2.7;
 const DISTANCE_VARIANCE_KM = 1.5;
 const CARGO_BIKE_SPEED_KMH = 15;
 const INCENTIVE_AMOUNT = 2.5;
-const START_DATE = new Date("2026-10-01T00:00:00Z");
-const END_DATE = new Date("2026-12-31T23:59:59Z");
+const START_DATE = new Date("2025-10-01T00:00:00Z");
+const END_DATE = new Date("2025-12-31T23:59:59Z");
 const CHUNK_SIZE = 1000;
 const SURVEY_RATE = 0.10;
 
@@ -231,8 +231,8 @@ async function seedCargoTripsInBackground() {
       .from('trips')
       .select('*', { count: 'exact', head: true })
       .eq('vehicle_type', 'cargo_bike')
-      .gte('start_time', '2026-10-01')
-      .lte('start_time', '2026-12-31');
+      .gte('start_time', '2025-10-01')
+      .lte('start_time', '2025-12-31');
 
     if (countError) {
       console.error('Error checking existing trips:', countError);
@@ -240,7 +240,7 @@ async function seedCargoTripsInBackground() {
     }
 
     if (count && count > 0) {
-      console.log(`Database already has ${count} cargo bike trips for Q4 2026. Skipping seed.`);
+      console.log(`Database already has ${count} cargo bike trips for Q4 2025. Skipping seed.`);
       return;
     }
 
@@ -339,7 +339,7 @@ serve(async (req) => {
         message: 'Cargo bike trip seeding started in background',
         total_trips: TOTAL_TRIPS,
         chunk_size: CHUNK_SIZE,
-        date_range: { start: "2026-10-01", end: "2026-12-31" },
+        date_range: { start: "2025-10-01", end: "2025-12-31" },
         providers: PROVIDERS.map(p => ({ name: p.name, share: `${p.share * 100}%` })),
         survey_rate: `${SURVEY_RATE * 100}%`,
       }),
