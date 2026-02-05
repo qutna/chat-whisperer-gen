@@ -53,11 +53,13 @@ export function useUpdateImpactRateSetting() {
           updated_at: new Date().toISOString(),
         })
         .eq("mode", setting.mode)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error("No matching rate setting found");
+      }
+      return data[0];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["impact-rate-settings"] });
