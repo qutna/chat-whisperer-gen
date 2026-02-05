@@ -1,82 +1,111 @@
 
+# Operators Page Overview
 
-# Fix Impact Rate Settings Update Failure
+## Page Purpose
+Provide city administrators with a comprehensive view of all mobility service providers operating in their jurisdiction, including fleet size, trip activity, and incentive earnings.
 
-## Problem Identified
-The update mutation fails with error `PGRST116: The result contains 0 rows` because:
+## Proposed Sections
 
-1. **RLS Policy Requires Authentication**: The `impact_rate_settings` table has an UPDATE policy that only allows `authenticated` users
-2. **No Authentication Implemented**: The app has no login/signup flow, so all requests use the anonymous key
-3. **Anonymous Users Cannot Update**: When the UPDATE runs, RLS blocks it, returning 0 affected rows, which causes `.single()` to fail
+### 1. Summary Stats Row (Top KPIs)
+A row of 4 key metric cards showing aggregate totals:
+- **Total Operators**: Count of active providers (currently 6)
+- **Total Fleet**: Sum of unique vehicles across all operators
+- **Total Trips**: Sum of all trips
+- **Total Incentive Payouts**: Sum of earnings paid to operators
 
-## Solution Options
+### 2. Operators Table (Main Section)
+A sortable table showing per-operator metrics:
 
-### Option A: Enable Anonymous Updates (Quick Fix)
-Modify the RLS policy to allow anonymous updates for development/testing purposes.
+| Column | Description |
+|--------|-------------|
+| Operator Name | Provider display name |
+| Vehicle Types | Badge showing Cargo Bike, E-Bike, P-Bike |
+| Fleet Size | Unique device count |
+| Total Trips | Number of completed trips |
+| Incentivized Trips | Trips that qualified for incentives |
+| Incentive Earnings | Total incentive amount earned |
+| Status | Active/Inactive badge |
 
-| Pros | Cons |
-|------|------|
-| Quick to implement | Less secure |
-| No code changes needed | Not suitable for production |
+Table will be sortable by clicking column headers.
 
-### Option B: Implement Authentication (Recommended for Production)
-Add a proper login flow so users can authenticate before editing settings.
+### 3. Fleet Composition Chart
+A horizontal stacked bar chart showing vehicle type distribution per operator, making it easy to compare fleet mix across providers.
 
-| Pros | Cons |
-|------|------|
-| Secure | More work to implement |
-| Production-ready | Requires UI changes |
+### 4. Activity Trends (Optional Future)
+A line chart showing monthly trip counts per operator - useful for spotting trends.
 
 ---
 
-## Recommended Approach: Quick Fix for Now
+## Technical Approach
 
-Since this is an admin settings page and appears to be in development, I recommend temporarily enabling anonymous updates on this table, with a note to add authentication later.
-
-### Database Change
-Update the RLS policy to allow all users to update (not just authenticated):
+### New Database Function
+Create `get_operator_summary()` RPC function that returns aggregated operator stats in a single query, respecting privacy by only returning aggregates.
 
 ```sql
-DROP POLICY IF EXISTS "Authenticated users can update impact rate settings" 
-  ON impact_rate_settings;
-
-CREATE POLICY "Anyone can update impact rate settings" 
-  ON impact_rate_settings 
-  FOR UPDATE 
-  USING (true) 
-  WITH CHECK (true);
+CREATE FUNCTION get_operator_summary()
+RETURNS TABLE (
+  provider_name text,
+  provider_id uuid,
+  vehicle_types text[],
+  fleet_size bigint,
+  total_trips bigint,
+  incentivized_trips bigint,
+  incentive_earnings numeric,
+  first_trip_date date,
+  last_trip_date date
+)
 ```
 
-### Code Improvement (Optional)
-Also improve the hook to handle edge cases better by not requiring `.single()`:
+### New Hook
+Create `useOperatorSummary` hook to fetch and cache operator data using React Query.
 
-```typescript
-// Remove .single() to avoid error when no rows affected
-const { data, error } = await supabase
-  .from("impact_rate_settings")
-  .update({...})
-  .eq("mode", setting.mode)
-  .select();
-
-if (error) throw error;
-if (!data || data.length === 0) {
-  throw new Error("No matching rate setting found");
-}
-return data[0];
+### Component Structure
+```text
+OperatorsPage
++-- OperatorSummaryStats (4 KPI cards)
++-- OperatorTable (main data table)
++-- OperatorFleetChart (stacked bar chart)
 ```
 
 ---
 
-## Files to Modify
-- Database migration: Update RLS policy for `impact_rate_settings`
-- `src/hooks/useImpactRateSettings.ts`: Improve error handling (optional)
+## Files to Create/Modify
+
+| File | Action |
+|------|--------|
+| `supabase/migrations/XXXX_add_operator_summary.sql` | Create `get_operator_summary` function |
+| `src/hooks/useOperatorSummary.ts` | New hook for fetching operator data |
+| `src/components/OperatorSummaryStats.tsx` | KPI summary cards component |
+| `src/components/OperatorTable.tsx` | Sortable operator table |
+| `src/components/OperatorFleetChart.tsx` | Vehicle type distribution chart |
+| `src/pages/OperatorsPage.tsx` | Compose all components together |
 
 ---
 
-## Expected Result
-After this fix:
-1. Clicking a cell to edit will work
-2. Saving changes will persist to the database
-3. The success toast "Impact rate updated successfully" will appear
-4. The cycling health rate (currently €1.00/km) can be reduced as you originally requested
+## UI Preview
 
+```text
++-------------------------------------------------------+
+|  Operators                                            |
+|  Manage mobility service providers in your city       |
++-------------------------------------------------------+
+|  [6]         [198K]       [198,505]     [€236K]      |
+|  Operators   Vehicles     Total Trips   Earnings     |
++-------------------------------------------------------+
+|                                                       |
+|  Operators Overview                                   |
+|  +---------------------------------------------------+
+|  | Name          | Types      | Fleet | Trips | €    |
+|  +---------------------------------------------------+
+|  | Donkey Rep.   | P,E-Bike   | 87K   | 87K   | €87K |
+|  | NextBike      | P-Bike     | 62K   | 62K   | €62K |
+|  | Lime          | E-Bike     | 25K   | 25K   | €25K |
+|  | Wheeling      | Cargo      | 11K   | 11K   | €28K |
+|  | FamilyBike    | Cargo      | 8K    | 8K    | €19K |
+|  | BlackIronHorse| Cargo      | 6K    | 6K    | €15K |
+|  +---------------------------------------------------+
+|                                                       |
+|  Fleet Composition by Operator                        |
+|  [========= Stacked Bar Chart ==================]    |
++-------------------------------------------------------+
+```
