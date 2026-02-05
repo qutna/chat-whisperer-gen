@@ -2,8 +2,10 @@ import { useState } from "react";
 import { GlobalFilters } from "@/components/GlobalFilters";
 import { ModeShiftSankey } from "@/components/ModeShiftSankey";
 import { ImpactMetrics } from "@/components/ImpactMetrics";
+ import { SROISummary } from "@/components/SROISummary";
 import { useModeShifts } from "@/hooks/useModeShifts";
 import { useImpactCalculations } from "@/hooks/useImpactCalculations";
+ import { useIncentiveTripSummary } from "@/hooks/useIncentiveTripSummary";
 import { TripFilters, getDefaultFilters } from "@/types/tripFilters";
 
 export default function ImpactsPage() {
@@ -11,6 +13,7 @@ export default function ImpactsPage() {
 
   const { data: sankeyData, isLoading: sankeyLoading } = useModeShifts(filters);
   const { data: impactData, isLoading: impactLoading } = useImpactCalculations(filters);
+   const { data: costData, loading: costLoading } = useIncentiveTripSummary(filters);
 
   return (
     <div className="space-y-6">
@@ -29,6 +32,11 @@ export default function ImpactsPage() {
 
         {/* Main Content */}
         <div className="flex-1 space-y-6">
+           <SROISummary 
+             impactData={impactData} 
+             costData={costData} 
+             isLoading={impactLoading || costLoading} 
+           />
           <ImpactMetrics data={impactData} isLoading={impactLoading} />
           <ModeShiftSankey data={sankeyData} isLoading={sankeyLoading} />
         </div>
