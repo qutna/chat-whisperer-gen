@@ -1,121 +1,98 @@
 
 
-# Add Incentive Summary Section to Trips Page
+# Add Social Return on Investment Section to Impacts Page
 
 ## Summary
-Add a summary table at the top of the Trips page content area that shows trip counts and earnings per incentive, filtered by the current global filters.
+Add a prominent summary card at the top of the Impact Metrics section displaying the SROI using the industry-standard ratio format.
 
 ---
 
 ## What Will Be Built
 
-A new section above the graph that displays:
-- A header showing the current date range from filters
-- A table with one row per incentive that has trips matching the filters
+A new card positioned above the existing Impact Metrics showing:
 
-| Column | Description |
-|--------|-------------|
-| Targeted Trips | Incentive name (numeric_id - brief_name) |
-| Number of Trips | Count of trips matching filters for this incentive |
-| Trip Incentive | The per-trip incentive amount (EUR) |
-| Earnings in Period | Number of Trips x Trip Incentive |
+| Metric | Description | Format |
+|--------|-------------|--------|
+| Total Impact | Sum of all impact values | +€245.3K |
+| Total Cost | Sum of incentive earnings | €98.2K |
+| SROI Ratio | Total Impact / Total Cost | 2.50:1 |
 
----
-
-## Implementation Approach
-
-### 1. Create Database Function
-A new PostgreSQL function `get_incentive_trip_summary` that:
-- Accepts the same filter parameters as `get_trip_aggregation`
-- Groups trips by incentive_id
-- Returns incentive details, trip count, and calculated earnings
-- Applies all global filters (period, providers, vehicle types, etc.)
-
-### 2. Create React Hook
-A new hook `useIncentiveTripSummary` in `src/hooks/` that:
-- Takes `TripFilters` as input
-- Calls the RPC function with filter parameters
-- Returns incentive summary data with loading state
-
-### 3. Create Summary Component
-A new component `IncentiveTripSummary` in `src/components/` that:
-- Receives filters as props
-- Uses the new hook to fetch data
-- Displays the date range header
-- Renders a styled table matching the mockup
-
-### 4. Update TripsPage
-Add the new summary component at the top of the main content area (below the page title, above the dimension/metric selectors).
+With supporting text: "For every €1 invested in incentives, €2.50 in social value is generated"
 
 ---
 
 ## Visual Layout
 
 ```text
-+------------------------------------------+
-| Trips                                    |
-| MDS trip data visualization...           |
-+------------------------------------------+
-| Trips during Oct 6, 2025 - Feb 4, 2026   |
-| +--------------------------------------+ |
-| | Targeted Trips | # Trips | € | Total | |
-| +--------------------------------------+ |
-| | 1-Bike Sharing |  45,230 | 1.00 | 45K | |
-| | 2-Cargo Bike   |   8,125 | 2.50 | 20K | |
-| +--------------------------------------+ |
-+------------------------------------------+
-| [X-Axis Dimension] [Y-Axis Metric]       |
-| [Graph View]                             |
-| ...                                      |
-+------------------------------------------+
++------------------------------------------------------------------+
+| Social Return on Investment                                       |
+| +------------------+  +------------------+  +-------------------+ |
+| | Total Impact     |  | Total Cost       |  | SROI              | |
+| | +€245.3K         |  | €98.2K           |  | 2.50 : 1          | |
+| | Net social       |  | Incentive        |  | €2.50 per €1      | |
+| | benefit          |  | payments         |  | invested          | |
+| +------------------+  +------------------+  +-------------------+ |
++------------------------------------------------------------------+
+| Impact Metrics (existing component below)                         |
++------------------------------------------------------------------+
 ```
+
+---
+
+## Implementation Approach
+
+### 1. Create SROI Summary Component
+A new component `SROISummary` that:
+- Receives `impactData` and `costData` as props
+- Displays three metric cards: Total Impact, Total Cost, SROI
+- Uses the standard ratio format (e.g., "2.50:1")
+- Includes descriptive text explaining the ratio
+- Handles edge cases (zero cost, negative impact)
+
+### 2. Update ImpactsPage
+- Add the `useIncentiveTripSummary` hook to fetch total cost
+- Calculate total cost from incentive earnings sum
+- Pass both datasets to the new SROI component
+- Place above the existing `ImpactMetrics` component
 
 ---
 
 ## Technical Details
 
-### Database Function SQL
-```sql
-CREATE OR REPLACE FUNCTION public.get_incentive_trip_summary(
-  p_filter_months text[] DEFAULT NULL,
-  p_filter_providers text[] DEFAULT NULL,
-  p_filter_vehicle_types text[] DEFAULT NULL,
-  p_filter_days_of_week integer[] DEFAULT NULL,
-  p_filter_time_slots text[] DEFAULT NULL,
-  p_filter_duration_buckets text[] DEFAULT NULL,
-  p_filter_incentive_ids text[] DEFAULT NULL,
-  p_start_lat double precision DEFAULT NULL,
-  p_start_lng double precision DEFAULT NULL,
-  p_start_radius_meters double precision DEFAULT NULL,
-  p_end_lat double precision DEFAULT NULL,
-  p_end_lng double precision DEFAULT NULL,
-  p_end_radius_meters double precision DEFAULT NULL
-)
-RETURNS TABLE(
-  incentive_id uuid,
-  numeric_id integer,
-  incentive_name text,
-  trip_count bigint,
-  incentive_amount numeric,
-  total_earnings numeric
-)
+### SROI Calculation
+```typescript
+const totalCost = incentiveData.reduce((sum, i) => sum + i.total_earnings, 0);
+const sroi = totalCost > 0 ? impactData.total / totalCost : null;
+
+// Display format: "2.50:1" with supporting text
+// "For every €1 invested, €2.50 in social value is generated"
 ```
 
-### Files to Create
-- `src/hooks/useIncentiveTripSummary.ts` - Data fetching hook
-- `src/components/IncentiveTripSummary.tsx` - Table component
+### Edge Cases
+- **Zero cost**: Display "N/A" for SROI with message "No cost data available"
+- **Negative impact**: Display ratio normally (e.g., "-0.50:1") with appropriate styling
+- **Loading states**: Show skeletons for all three metrics
 
-### Files to Modify
-- `src/pages/TripsPage.tsx` - Add the new component
-- Database migration for the new function
+### Color Coding
+- SROI > 1: Green (positive return)
+- SROI = 1: Neutral 
+- SROI < 1: Red (investment exceeds return)
+
+---
+
+## Files to Create
+- `src/components/SROISummary.tsx` - New SROI summary component
+
+## Files to Modify  
+- `src/pages/ImpactsPage.tsx` - Add hook and component integration
 
 ---
 
 ## Expected Result
-When viewing the Trips page:
-1. The summary table appears at the top of the content area
-2. Shows only incentives that have matching trips in the filtered period
-3. Updates automatically when any filter changes
-4. Shows formatted currency values (e.g., €45.2K)
-5. Date range header reflects the current filter period
+When viewing the Impacts page:
+1. The SROI summary card appears at the top of the main content area
+2. Displays the ratio in standard format (X.XX:1)
+3. Includes clear explanation text
+4. Updates automatically when filters change
+5. Uses appropriate color coding for positive/negative returns
 
