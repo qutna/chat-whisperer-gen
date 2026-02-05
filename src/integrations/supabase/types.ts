@@ -424,6 +424,23 @@ export type Database = {
           surveyed_count: number
         }[]
       }
+      get_operator_summary: {
+        Args: never
+        Returns: {
+          cargo_bike_count: number
+          ebike_count: number
+          first_trip_date: string
+          fleet_size: number
+          incentive_earnings: number
+          incentivized_trips: number
+          last_trip_date: string
+          pbike_count: number
+          provider_id: string
+          provider_name: string
+          total_trips: number
+          vehicle_types: string[]
+        }[]
+      }
       get_trip_aggregation: {
         Args: {
           p_dimension: string
