@@ -3,11 +3,14 @@
  import { ImpactResults } from "@/hooks/useImpactCalculations";
  import { IncentiveSummary } from "@/hooks/useIncentiveTripSummary";
  import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+ import { format } from "date-fns";
  
  interface SROISummaryProps {
    impactData: ImpactResults | undefined;
    costData: IncentiveSummary[];
    isLoading: boolean;
+   startDate: Date | null;
+   endDate: Date | null;
  }
  
  function formatCurrency(value: number): string {
@@ -32,7 +35,7 @@
    return `€${value.toFixed(0)}`;
  }
  
- export function SROISummary({ impactData, costData, isLoading }: SROISummaryProps) {
+ export function SROISummary({ impactData, costData, isLoading, startDate, endDate }: SROISummaryProps) {
    const totalImpact = impactData?.total ?? 0;
    const totalCost = costData.reduce((sum, item) => sum + item.total_earnings, 0);
    const sroi = totalCost > 0 ? totalImpact / totalCost : null;
@@ -62,6 +65,19 @@
        return `€${ratio.toFixed(2)} per €1 invested`;
      }
      return `€${ratio.toFixed(2)} per €1 invested`;
+   };
+ 
+   const getDateRangeText = (): string => {
+     if (startDate && endDate) {
+       return `${format(startDate, "MMM d, yyyy")} to ${format(endDate, "MMM d, yyyy")}`;
+     }
+     return "the selected period";
+   };
+ 
+   const getNetReturnText = (ratio: number): string => {
+     const netReturn = (ratio - 1) * 100;
+     const sign = netReturn >= 0 ? "+" : "";
+     return `${sign}${netReturn.toFixed(0)}% net return`;
    };
  
    if (isLoading) {
@@ -123,9 +139,9 @@
            </div>
          </div>
  
-         {sroi !== null && sroi > 0 && (
+         {sroi !== null && (
            <p className="mt-4 text-sm text-muted-foreground border-t pt-3">
-             For every €1 invested in incentives, €{sroi.toFixed(2)} in social value is generated
+             Each €1 of public spending in mobility incentives during {getDateRangeText()} generated €{sroi.toFixed(2)} in social value ({getNetReturnText(sroi)}).
            </p>
          )}
        </CardContent>

@@ -36,6 +36,8 @@ export default function ImpactsPage() {
              impactData={impactData} 
              costData={costData} 
              isLoading={impactLoading || costLoading} 
+             startDate={filters.startDate}
+             endDate={filters.endDate}
            />
           <ImpactMetrics data={impactData} isLoading={impactLoading} />
           <ModeShiftSankey data={sankeyData} isLoading={sankeyLoading} />
