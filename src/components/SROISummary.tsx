@@ -69,7 +69,7 @@
  
    const getDateRangeText = (): string => {
      if (startDate && endDate) {
-       return `${format(startDate, "MMM d, yyyy")} to ${format(endDate, "MMM d, yyyy")}`;
+       return `${format(startDate, "MMM yyyy")} – ${format(endDate, "MMM yyyy")}`;
      }
      return "the selected period";
    };
@@ -141,7 +141,7 @@
  
          {sroi !== null && (
            <p className="mt-4 text-sm text-muted-foreground border-t pt-3">
-             Each €1 of public spending in mobility incentives during {getDateRangeText()} generated €{sroi.toFixed(2)} in social value ({getNetReturnText(sroi)}).
+             Each €1 in incentives ({getDateRangeText()}) generated €{sroi.toFixed(2)} in social value ({getNetReturnText(sroi)}).
            </p>
          )}
        </CardContent>
