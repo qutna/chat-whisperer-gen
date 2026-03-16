@@ -1,31 +1,111 @@
 
-Problem identified:
-- The dashboard is failing because the impact query errors, and the whole page treats that as a fatal load failure.
-- The specific backend failure is in `get_impact_calculation_data`: it uses `::geography` / `ST_DWithin(...)`, but the database does not have that type/operator available in this environment.
-- The operator and payout data paths do work, so the dashboard can already fetch real trips and incentive totals.
+# Operators Page Overview
 
-What I would build
-1. Fix the backend impact aggregation
-- Update `get_impact_calculation_data` so location filtering uses the same non-PostGIS distance logic already used by the working dashboard RPCs.
-- Also verify the location JSON access pattern is consistent with the rest of the app.
+## Page Purpose
+Provide city administrators with a comprehensive view of all mobility service providers operating in their jurisdiction, including fleet size, trip activity, and incentive earnings.
 
-2. Make the dashboard resilient
-- Change `useDashboardOverview` so impact failures do not blank the whole dashboard.
-- Keep operator stats, payout totals, and vehicle/service breakdown visible even if impact metrics are temporarily unavailable.
-- Return a separate `impactError` instead of one combined fatal `error`.
+## Proposed Sections
 
-3. Improve the dashboard error UX
-- On `src/pages/Index.tsx`, only show the full-page error if the core overview query fails.
-- If only impact fails, show a small inline warning inside the impact cards and keep the rest of the dashboard populated.
+### 1. Summary Stats Row (Top KPIs)
+A row of 4 key metric cards showing aggregate totals:
+- **Total Operators**: Count of active providers (currently 6)
+- **Total Fleet**: Sum of unique vehicles across all operators
+- **Total Trips**: Sum of all trips
+- **Total Incentive Payouts**: Sum of earnings paid to operators
 
-4. Sanity-check filter compatibility
-- Review time-slot and duration-bucket mappings between `useImpactCalculations` and the SQL function, because there are inconsistencies that could cause empty/incorrect impact results even after the crash is fixed.
+### 2. Operators Table (Main Section)
+A sortable table showing per-operator metrics:
 
-Expected result
-- Dashboard loads again with real data.
-- Operators, fleet, trips, payouts, and services supported will render immediately.
-- Impact/SROI will either render correctly after the SQL fix or degrade gracefully with a clear message instead of taking down the whole page.
+| Column | Description |
+|--------|-------------|
+| Operator Name | Provider display name |
+| Vehicle Types | Badge showing Cargo Bike, E-Bike, P-Bike |
+| Fleet Size | Unique device count |
+| Total Trips | Number of completed trips |
+| Incentivized Trips | Trips that qualified for incentives |
+| Incentive Earnings | Total incentive amount earned |
+| Status | Active/Inactive badge |
 
-Technical note
-- The likely root cause is not missing data: `trips`, `get_filtered_operator_summary`, and `get_incentive_trip_summary` all return data successfully.
-- The blocking issue is the backend function used by `useImpactCalculations`, not the dashboard layout itself.
+Table will be sortable by clicking column headers.
+
+### 3. Fleet Composition Chart
+A horizontal stacked bar chart showing vehicle type distribution per operator, making it easy to compare fleet mix across providers.
+
+### 4. Activity Trends (Optional Future)
+A line chart showing monthly trip counts per operator - useful for spotting trends.
+
+---
+
+## Technical Approach
+
+### New Database Function
+Create `get_operator_summary()` RPC function that returns aggregated operator stats in a single query, respecting privacy by only returning aggregates.
+
+```sql
+CREATE FUNCTION get_operator_summary()
+RETURNS TABLE (
+  provider_name text,
+  provider_id uuid,
+  vehicle_types text[],
+  fleet_size bigint,
+  total_trips bigint,
+  incentivized_trips bigint,
+  incentive_earnings numeric,
+  first_trip_date date,
+  last_trip_date date
+)
+```
+
+### New Hook
+Create `useOperatorSummary` hook to fetch and cache operator data using React Query.
+
+### Component Structure
+```text
+OperatorsPage
++-- OperatorSummaryStats (4 KPI cards)
++-- OperatorTable (main data table)
++-- OperatorFleetChart (stacked bar chart)
+```
+
+---
+
+## Files to Create/Modify
+
+| File | Action |
+|------|--------|
+| `supabase/migrations/XXXX_add_operator_summary.sql` | Create `get_operator_summary` function |
+| `src/hooks/useOperatorSummary.ts` | New hook for fetching operator data |
+| `src/components/OperatorSummaryStats.tsx` | KPI summary cards component |
+| `src/components/OperatorTable.tsx` | Sortable operator table |
+| `src/components/OperatorFleetChart.tsx` | Vehicle type distribution chart |
+| `src/pages/OperatorsPage.tsx` | Compose all components together |
+
+---
+
+## UI Preview
+
+```text
++-------------------------------------------------------+
+|  Operators                                            |
+|  Manage mobility service providers in your city       |
++-------------------------------------------------------+
+|  [6]         [198K]       [198,505]     [€236K]      |
+|  Operators   Vehicles     Total Trips   Earnings     |
++-------------------------------------------------------+
+|                                                       |
+|  Operators Overview                                   |
+|  +---------------------------------------------------+
+|  | Name          | Types      | Fleet | Trips | €    |
+|  +---------------------------------------------------+
+|  | Donkey Rep.   | P,E-Bike   | 87K   | 87K   | €87K |
+|  | NextBike      | P-Bike     | 62K   | 62K   | €62K |
+|  | Lime          | E-Bike     | 25K   | 25K   | €25K |
+|  | Wheeling      | Cargo      | 11K   | 11K   | €28K |
+|  | FamilyBike    | Cargo      | 8K    | 8K    | €19K |
+|  | BlackIronHorse| Cargo      | 6K    | 6K    | €15K |
+|  +---------------------------------------------------+
+|                                                       |
+|  Fleet Composition by Operator                        |
+|  [========= Stacked Bar Chart ==================]    |
++-------------------------------------------------------+
+```
