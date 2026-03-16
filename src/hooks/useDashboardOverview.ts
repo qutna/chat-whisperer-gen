@@ -83,7 +83,7 @@ export function useDashboardOverview(filters: TripFilters) {
     [payoutSummary.data]
   );
 
-  const sroi = payoutTotal > 0 ? (impactQuery.data?.total ?? 0) / payoutTotal : null;
+  const sroi = payoutTotal > 0 && impactQuery.data ? impactQuery.data.total / payoutTotal : null;
 
   return {
     filters,
@@ -94,7 +94,9 @@ export function useDashboardOverview(filters: TripFilters) {
     incentivizedTrips,
     impactData: impactQuery.data,
     sroi,
-    isLoading: overviewQuery.isLoading || impactQuery.isLoading || payoutSummary.loading,
-    error: overviewQuery.error || impactQuery.error || payoutSummary.error,
+    isLoading: overviewQuery.isLoading || payoutSummary.loading,
+    isImpactLoading: impactQuery.isLoading,
+    error: overviewQuery.error || payoutSummary.error,
+    impactError: impactQuery.error,
   };
 }

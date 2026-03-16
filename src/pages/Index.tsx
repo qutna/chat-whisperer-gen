@@ -45,8 +45,19 @@ function getVehicleIcon(type: string) {
 
 export default function Index() {
   const [filters, setFilters] = useState<TripFilters>(getDefaultFilters);
-  const { aggregatedStats, vehicleSummary, impactData, payoutTotal, incentivizedTrips, sroi, operators, isLoading, error } =
-    useDashboardOverview(filters);
+  const {
+    aggregatedStats,
+    vehicleSummary,
+    impactData,
+    payoutTotal,
+    incentivizedTrips,
+    sroi,
+    operators,
+    isLoading,
+    isImpactLoading,
+    error,
+    impactError,
+  } = useDashboardOverview(filters);
 
   if (error) {
     return (
@@ -97,14 +108,18 @@ export default function Index() {
                       <Leaf className="h-4 w-4" />
                       <span className="text-sm">Impact achieved</span>
                     </div>
-                    <p className="text-2xl font-semibold text-foreground">{isLoading ? "—" : formatCurrency(impactData?.total ?? 0)}</p>
+                    <p className="text-2xl font-semibold text-foreground">
+                      {isImpactLoading ? "—" : impactError ? "Unavailable" : formatCurrency(impactData?.total ?? 0)}
+                    </p>
                   </div>
                   <div className="rounded-lg border p-4">
                     <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                       <Coins className="h-4 w-4" />
                       <span className="text-sm">SROI</span>
                     </div>
-                    <p className="text-2xl font-semibold text-foreground">{isLoading ? "—" : formatSroi(sroi)}</p>
+                    <p className="text-2xl font-semibold text-foreground">
+                      {isImpactLoading ? "—" : impactError ? "Unavailable" : formatSroi(sroi)}
+                    </p>
                   </div>
                   <div className="rounded-lg border p-4">
                     <div className="mb-2 flex items-center gap-2 text-muted-foreground">
@@ -124,25 +139,31 @@ export default function Index() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {IMPACT_ITEMS.map(({ key, label, icon: Icon }) => {
-                    const euroValue = impactData?.[key] ?? 0;
-                    const equivalent = getEquivalentForMetric(key, euroValue, impactData?.totalTrips);
+                  {impactError ? (
+                    <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                      Impact metrics are temporarily unavailable, but the rest of the dashboard is still live.
+                    </div>
+                  ) : (
+                    IMPACT_ITEMS.map(({ key, label, icon: Icon }) => {
+                      const euroValue = impactData?.[key] ?? 0;
+                      const equivalent = getEquivalentForMetric(key, euroValue, impactData?.totalTrips);
 
-                    return (
-                      <div key={key} className="flex items-start justify-between gap-4 border-b pb-4 last:border-b-0 last:pb-0">
-                        <div className="flex min-w-0 items-start gap-3">
-                          <div className="rounded-md border p-2 text-muted-foreground">
-                            <Icon className="h-4 w-4" />
+                      return (
+                        <div key={key} className="flex items-start justify-between gap-4 border-b pb-4 last:border-b-0 last:pb-0">
+                          <div className="flex min-w-0 items-start gap-3">
+                            <div className="rounded-md border p-2 text-muted-foreground">
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-foreground">{label}</p>
+                              <p className="text-xs text-muted-foreground">{isImpactLoading ? "Loading…" : equivalent.description}</p>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-foreground">{label}</p>
-                            <p className="text-xs text-muted-foreground">{isLoading ? "Loading…" : equivalent.description}</p>
-                          </div>
+                          <p className="shrink-0 text-sm font-semibold text-foreground">{isImpactLoading ? "—" : formatCurrency(euroValue)}</p>
                         </div>
-                        <p className="shrink-0 text-sm font-semibold text-foreground">{isLoading ? "—" : formatCurrency(euroValue)}</p>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </CardContent>
             </Card>
