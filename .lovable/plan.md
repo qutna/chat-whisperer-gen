@@ -1,100 +1,111 @@
 
-Goal: replace the Dashboard’s hardcoded mock numbers with a real executive overview driven by existing backend aggregations and the app’s shared filtering model.
+# Operators Page Overview
 
-What makes sense to show
-1. Executive KPI row
-- Total trips in current period
-- Active operators
-- Active fleet (unique vehicles)
-- Incentive payouts
-- Optional fifth KPI: Total impact value or SROI if you want the landing page to stay impact-led
+## Page Purpose
+Provide city administrators with a comprehensive view of all mobility service providers operating in their jurisdiction, including fleet size, trip activity, and incentive earnings.
 
-2. Investment Summary card
-Keep this section, but switch it to real metrics:
-- Incentive payouts to date/current period
-- Impact achieved
-- SROI = impact / payouts
-- Incentivized trips count
-This fits your requested “money + outcomes” story better than “funds waiting to be deployed,” since budget data does not seem to exist yet.
+## Proposed Sections
 
-3. Services Supported / Mobility Modes card
-Keep the current section, but make it real:
-- One row per vehicle category already supported by your data: Cargo Bike, E-Bike, P-Bike
-- Trips
-- Avg incentive per incentivized trip
-- Total payouts
-This is a strong replacement for the current hardcoded “initiative” table.
+### 1. Summary Stats Row (Top KPIs)
+A row of 4 key metric cards showing aggregate totals:
+- **Total Operators**: Count of active providers (currently 6)
+- **Total Fleet**: Sum of unique vehicles across all operators
+- **Total Trips**: Sum of all trips
+- **Total Incentive Payouts**: Sum of earnings paid to operators
 
-4. Impact Summary card
-Keep this section and drive it from actual impact calculations:
-- Reduced congestion
-- Public space benefits
-- Public health
-- Reduced emissions
-- Accessibility
-Show both the metric value and economic value where possible, using the existing impact-calculation pipeline.
+### 2. Operators Table (Main Section)
+A sortable table showing per-operator metrics:
 
-5. Active Operators section
-Replace the fake operator avatars with a real “Top operators” overview:
-- Top 5 operators by trips or payouts
-- Fleet size
-- Trips
-- Incentive payouts
-- Vehicle types served
-Add a link/CTA to the full Operators tab.
+| Column | Description |
+|--------|-------------|
+| Operator Name | Provider display name |
+| Vehicle Types | Badge showing Cargo Bike, E-Bike, P-Bike |
+| Fleet Size | Unique device count |
+| Total Trips | Number of completed trips |
+| Incentivized Trips | Trips that qualified for incentives |
+| Incentive Earnings | Total incentive amount earned |
+| Status | Active/Inactive badge |
 
-What I’d use from existing data
-- `trips` for trips, operators, vehicles, and actual trip activity
-- `get_operator_summary()` for operator/fleet rollups
-- `get_incentive_trip_summary()` for payout totals
-- `useImpactCalculations()` for impact and SROI
-- Existing trip filter model with default last-90-days/current-period behavior
+Table will be sortable by clicking column headers.
 
-Recommended first version
-For your chosen “Executive overview” approach, I’d build the dashboard around 4 blocks:
+### 3. Fleet Composition Chart
+A horizontal stacked bar chart showing vehicle type distribution per operator, making it easy to compare fleet mix across providers.
 
-```text
-Header
-KPI Row: Trips | Operators | Fleet | Payouts
-Investment & Outcomes: payouts, impact, SROI, incentivized trips
-Mode / Service Breakdown: Cargo Bike | E-Bike | P-Bike table
-Top Operators: top providers with trips, fleet, payouts
+### 4. Activity Trends (Optional Future)
+A line chart showing monthly trip counts per operator - useful for spotting trends.
+
+---
+
+## Technical Approach
+
+### New Database Function
+Create `get_operator_summary()` RPC function that returns aggregated operator stats in a single query, respecting privacy by only returning aggregates.
+
+```sql
+CREATE FUNCTION get_operator_summary()
+RETURNS TABLE (
+  provider_name text,
+  provider_id uuid,
+  vehicle_types text[],
+  fleet_size bigint,
+  total_trips bigint,
+  incentivized_trips bigint,
+  incentive_earnings numeric,
+  first_trip_date date,
+  last_trip_date date
+)
 ```
 
-Clarifications I do need before implementing
-1. Period definition
-You chose “Current period” by default. Should that mean:
-- last 90 days, or
-- current quarter, or
-- current month?
+### New Hook
+Create `useOperatorSummary` hook to fetch and cache operator data using React Query.
 
-2. Impact on dashboard
-Do you want the landing page to include:
-- financial + operational metrics only, or
-- also impact value and SROI?
+### Component Structure
+```text
+OperatorsPage
++-- OperatorSummaryStats (4 KPI cards)
++-- OperatorTable (main data table)
++-- OperatorFleetChart (stacked bar chart)
+```
 
-3. Money definition detail
-You selected “Incentive payouts.” I assume this means:
-- sum of earned incentive payouts from incentivized trips
-not planned budgets. Please confirm that is the number you want highlighted.
+---
 
-4. Operator section format
-Should the dashboard show:
-- just top 5 operators, or
-- all operators in a compact table?
+## Files to Create/Modify
 
-Technical approach
-- Reuse the shared date/filter model already used in Trips/Impacts so the Dashboard stays consistent with the rest of the app
-- Add a dashboard-specific hook that composes existing aggregated sources rather than querying raw trips directly
-- Keep everything aggregate-only, matching the current privacy-preserving backend approach
-- Avoid new schema changes if possible; this can likely be built from existing functions plus one dashboard composition hook
+| File | Action |
+|------|--------|
+| `supabase/migrations/XXXX_add_operator_summary.sql` | Create `get_operator_summary` function |
+| `src/hooks/useOperatorSummary.ts` | New hook for fetching operator data |
+| `src/components/OperatorSummaryStats.tsx` | KPI summary cards component |
+| `src/components/OperatorTable.tsx` | Sortable operator table |
+| `src/components/OperatorFleetChart.tsx` | Vehicle type distribution chart |
+| `src/pages/OperatorsPage.tsx` | Compose all components together |
 
-Implementation plan
-1. Audit current dashboard and map each hardcoded metric to a real backend source
-2. Add a dashboard data hook that combines operator summary, incentive payout summary, and impact summary for the default period
-3. Replace the current landing page cards with real-data versions while preserving the overall structure
-4. Swap the fake operator list for a real top-operators section linked to the Operators page
-5. If needed, add lightweight dashboard filters or inherit the shared default period behavior
+---
 
-My recommendation
-Yes, we can keep the current sections, but I do need the 4 clarifications above because they determine what “real” should mean on the landing page—especially the default period and whether impact/SROI belongs there.
+## UI Preview
+
+```text
++-------------------------------------------------------+
+|  Operators                                            |
+|  Manage mobility service providers in your city       |
++-------------------------------------------------------+
+|  [6]         [198K]       [198,505]     [€236K]      |
+|  Operators   Vehicles     Total Trips   Earnings     |
++-------------------------------------------------------+
+|                                                       |
+|  Operators Overview                                   |
+|  +---------------------------------------------------+
+|  | Name          | Types      | Fleet | Trips | €    |
+|  +---------------------------------------------------+
+|  | Donkey Rep.   | P,E-Bike   | 87K   | 87K   | €87K |
+|  | NextBike      | P-Bike     | 62K   | 62K   | €62K |
+|  | Lime          | E-Bike     | 25K   | 25K   | €25K |
+|  | Wheeling      | Cargo      | 11K   | 11K   | €28K |
+|  | FamilyBike    | Cargo      | 8K    | 8K    | €19K |
+|  | BlackIronHorse| Cargo      | 6K    | 6K    | €15K |
+|  +---------------------------------------------------+
+|                                                       |
+|  Fleet Composition by Operator                        |
+|  [========= Stacked Bar Chart ==================]    |
++-------------------------------------------------------+
+```

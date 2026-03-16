@@ -45,7 +45,7 @@ export function MapView({ filters }: MapViewProps) {
   const [loading, setLoading] = useState(true);
   const [routeCount, setRouteCount] = useState(0);
   const [totalTrips, setTotalTrips] = useState(0);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadRoutes = useCallback(async () => {
     if (!map.current) return;

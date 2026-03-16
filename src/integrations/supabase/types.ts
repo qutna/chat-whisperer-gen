@@ -350,6 +350,61 @@ export type Database = {
           trip_count: number
         }[]
       }
+      get_filtered_operator_summary: {
+        Args: {
+          p_end_lat?: number
+          p_end_lng?: number
+          p_end_radius_meters?: number
+          p_filter_days_of_week?: number[]
+          p_filter_duration_buckets?: string[]
+          p_filter_incentive_ids?: string[]
+          p_filter_months?: string[]
+          p_filter_providers?: string[]
+          p_filter_time_slots?: string[]
+          p_filter_vehicle_types?: string[]
+          p_start_lat?: number
+          p_start_lng?: number
+          p_start_radius_meters?: number
+        }
+        Returns: {
+          cargo_bike_count: number
+          ebike_count: number
+          first_trip_date: string
+          fleet_size: number
+          incentive_earnings: number
+          incentivized_trips: number
+          last_trip_date: string
+          pbike_count: number
+          provider_id: string
+          provider_name: string
+          total_trips: number
+          vehicle_types: string[]
+        }[]
+      }
+      get_filtered_vehicle_type_summary: {
+        Args: {
+          p_end_lat?: number
+          p_end_lng?: number
+          p_end_radius_meters?: number
+          p_filter_days_of_week?: number[]
+          p_filter_duration_buckets?: string[]
+          p_filter_incentive_ids?: string[]
+          p_filter_months?: string[]
+          p_filter_providers?: string[]
+          p_filter_time_slots?: string[]
+          p_filter_vehicle_types?: string[]
+          p_start_lat?: number
+          p_start_lng?: number
+          p_start_radius_meters?: number
+        }
+        Returns: {
+          avg_payout_per_incentivized_trip: number
+          bike_type: string
+          incentivized_trip_count: number
+          total_payouts: number
+          trip_count: number
+        }[]
+      }
       get_impact_calculation_data: {
         Args: {
           p_end_lat?: number
