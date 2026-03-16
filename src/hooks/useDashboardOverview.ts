@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getMonthsFromDateRange, TripFilters } from "@/types/tripFilters";
 import { useImpactCalculations } from "@/hooks/useImpactCalculations";
-import { useIncentiveTripSummary } from "@/hooks/useIncentiveTripSummary";
 import { useAggregatedStats, type OperatorSummary } from "@/hooks/useOperatorSummary";
 
 export interface VehicleTypeSummary {
@@ -41,7 +40,6 @@ function buildRpcParams(filters: TripFilters) {
 
 export function useDashboardOverview(filters: TripFilters) {
   const impactQuery = useImpactCalculations(filters);
-  const payoutSummary = useIncentiveTripSummary(filters);
 
   const overviewQuery = useQuery({
     queryKey: ["dashboard-overview", filters],
@@ -74,13 +72,13 @@ export function useDashboardOverview(filters: TripFilters) {
   const aggregatedStats = useAggregatedStats(overviewQuery.data?.operators);
 
   const payoutTotal = useMemo(
-    () => payoutSummary.data.reduce((sum, item) => sum + item.total_earnings, 0),
-    [payoutSummary.data]
+    () => (overviewQuery.data?.vehicleSummary ?? []).reduce((sum, item) => sum + item.total_payouts, 0),
+    [overviewQuery.data?.vehicleSummary]
   );
 
   const incentivizedTrips = useMemo(
-    () => payoutSummary.data.reduce((sum, item) => sum + item.trip_count, 0),
-    [payoutSummary.data]
+    () => (overviewQuery.data?.vehicleSummary ?? []).reduce((sum, item) => sum + item.incentivized_trip_count, 0),
+    [overviewQuery.data?.vehicleSummary]
   );
 
   const sroi = payoutTotal > 0 && impactQuery.data ? impactQuery.data.total / payoutTotal : null;
@@ -94,9 +92,9 @@ export function useDashboardOverview(filters: TripFilters) {
     incentivizedTrips,
     impactData: impactQuery.data,
     sroi,
-    isLoading: overviewQuery.isLoading || payoutSummary.loading,
+    isLoading: overviewQuery.isLoading,
     isImpactLoading: impactQuery.isLoading,
-    error: overviewQuery.error || payoutSummary.error,
+    error: overviewQuery.error,
     impactError: impactQuery.error,
   };
 }
