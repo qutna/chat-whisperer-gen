@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Bike, Building2, Coins, Euro, Leaf, Heart, Car, Users, Truck, Zap } from "lucide-react";
 import { OperatorTable } from "@/components/OperatorTable";
 import { OperatorSummaryStats } from "@/components/OperatorSummaryStats";
@@ -42,6 +43,8 @@ function getVehicleIcon(type: string) {
 }
 
 export default function Index() {
+  const dashboardFilters = useMemo(() => getDefaultFilters(), []);
+
   const {
     aggregatedStats,
     vehicleSummary,
@@ -54,7 +57,7 @@ export default function Index() {
     isImpactLoading,
     error,
     impactError,
-  } = useDashboardOverview(getDefaultFilters());
+  } = useDashboardOverview(dashboardFilters);
 
   if (error) {
     return (
