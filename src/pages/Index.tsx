@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Bike, Building2, Coins, Euro, Leaf, Heart, Car, Users, Truck, Zap } from "lucide-react";
 import { OperatorTable } from "@/components/OperatorTable";
 import { OperatorSummaryStats } from "@/components/OperatorSummaryStats";
+import { DashboardIncentiveSummary } from "@/components/DashboardIncentiveSummary";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -82,6 +83,7 @@ export default function Index() {
 
       <div className="space-y-6">
         <OperatorSummaryStats stats={aggregatedStats} isLoading={isLoading} />
+        <DashboardIncentiveSummary />
 
         <div className="grid gap-6 lg:grid-cols-2">
           <Card>
