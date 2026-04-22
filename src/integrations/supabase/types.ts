@@ -215,17 +215,28 @@ export type Database = {
         Row: {
           accuracy: number
           actual_cost: number | null
+          bike_type: string | null
           created_at: string
           currency: string | null
           device_id: string
+          dow: number | null
+          duration_bucket: string | null
+          end_lat: number | null
+          end_lng: number | null
           end_location: Json
           end_time: string
+          hour_slot: string | null
           incentive_id: string | null
+          is_urban_start: boolean | null
+          month_key: string | null
           propulsion_types: string[]
           provider_id: string
           provider_name: string
           route: Json
+          rush_hour_percent: number | null
           standard_cost: number | null
+          start_lat: number | null
+          start_lng: number | null
           start_location: Json
           start_time: string
           trip_distance: number
@@ -236,17 +247,28 @@ export type Database = {
         Insert: {
           accuracy: number
           actual_cost?: number | null
+          bike_type?: string | null
           created_at?: string
           currency?: string | null
           device_id: string
+          dow?: number | null
+          duration_bucket?: string | null
+          end_lat?: number | null
+          end_lng?: number | null
           end_location: Json
           end_time: string
+          hour_slot?: string | null
           incentive_id?: string | null
+          is_urban_start?: boolean | null
+          month_key?: string | null
           propulsion_types: string[]
           provider_id: string
           provider_name: string
           route: Json
+          rush_hour_percent?: number | null
           standard_cost?: number | null
+          start_lat?: number | null
+          start_lng?: number | null
           start_location: Json
           start_time: string
           trip_distance: number
@@ -257,17 +279,28 @@ export type Database = {
         Update: {
           accuracy?: number
           actual_cost?: number | null
+          bike_type?: string | null
           created_at?: string
           currency?: string | null
           device_id?: string
+          dow?: number | null
+          duration_bucket?: string | null
+          end_lat?: number | null
+          end_lng?: number | null
           end_location?: Json
           end_time?: string
+          hour_slot?: string | null
           incentive_id?: string | null
+          is_urban_start?: boolean | null
+          month_key?: string | null
           propulsion_types?: string[]
           provider_id?: string
           provider_name?: string
           route?: Json
+          rush_hour_percent?: number | null
           standard_cost?: number | null
+          start_lat?: number | null
+          start_lng?: number | null
           start_location?: Json
           start_time?: string
           trip_distance?: number
@@ -311,6 +344,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      backfill_trips_derived: { Args: { p_limit?: number }; Returns: number }
       calculate_rush_hour_percent: {
         Args: {
           p_end_time: string
