@@ -344,6 +344,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      backfill_trips_derived: { Args: { p_limit?: number }; Returns: number }
       calculate_rush_hour_percent: {
         Args: {
           p_end_time: string
