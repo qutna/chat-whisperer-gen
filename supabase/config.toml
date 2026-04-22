@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.seed-q1-2026-trips]
 verify_jwt = false
+
+[functions.seed-q1-2026-ebike]
+verify_jwt = false
+
+[functions.seed-q1-2026-cargo]
+verify_jwt = false
