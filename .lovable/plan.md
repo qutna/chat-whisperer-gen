@@ -1,111 +1,34 @@
 
-# Operators Page Overview
 
-## Page Purpose
-Provide city administrators with a comprehensive view of all mobility service providers operating in their jurisdiction, including fleet size, trip activity, and incentive earnings.
+## Why the Sankey is unavailable & why SROI looks inflated
 
-## Proposed Sections
+### Root cause
 
-### 1. Summary Stats Row (Top KPIs)
-A row of 4 key metric cards showing aggregate totals:
-- **Total Operators**: Count of active providers (currently 6)
-- **Total Fleet**: Sum of unique vehicles across all operators
-- **Total Trips**: Sum of all trips
-- **Total Incentive Payouts**: Sum of earnings paid to operators
+The console shows `get_mode_shift_data` is timing out (`statement timeout`, code 57014). Looking at that function in the database, it was **not** updated in the recent performance migration — unlike `get_impact_calculation_data`, which now uses pre-computed columns (`month_key`, `bike_type`, `dow`, `hour_slot`, `duration_bucket`, `start_lat/lng`, `is_urban_start`).
 
-### 2. Operators Table (Main Section)
-A sortable table showing per-operator metrics:
+`get_mode_shift_data` still:
+- Re-derives `bike_type`, month, hour bucket, duration bucket, and DOW from scratch on every row
+- Uses the **wrong duration bucket labels** (`'1-5 min'`, `'5-10 min'`, …) and **wrong time-slot labels** (`'00:00-06:00'`, …) that don't match what the rest of the app uses (`'1-10min'`, `'HH:00'`)
+- Reads coordinates as `start_location->>'lng'` (the GeoJSON format in this project is `coordinates[0]/[1]`, not `lng`/`lat` keys) — broken location filter
+- Runs three near-identical scans of all 340k trips × `trip_surveys` (34k rows) → timeout
 
-| Column | Description |
-|--------|-------------|
-| Operator Name | Provider display name |
-| Vehicle Types | Badge showing Cargo Bike, E-Bike, P-Bike |
-| Fleet Size | Unique device count |
-| Total Trips | Number of completed trips |
-| Incentivized Trips | Trips that qualified for incentives |
-| Incentive Earnings | Total incentive amount earned |
-| Status | Active/Inactive badge |
+So the Sankey query never returns, and the UI falls back to "No survey data available."
 
-Table will be sortable by clicking column headers.
+### Why SROI is 9.41
+SROI = Total Impact ÷ Total Cost. Impact is computed from the **extrapolated** survey sample (34k surveys × 10 = 340k trips), which inflates absolute impact value. Meanwhile cost only counts trips actually linked to incentives. With the new Q1 2026 carpool + bike + cargo seeding, lots of impact is being attributed but the matching cost denominator is correct, so the ratio looks high but is mathematically consistent with the model. We can sanity-check after the Sankey is fixed.
 
-### 3. Fleet Composition Chart
-A horizontal stacked bar chart showing vehicle type distribution per operator, making it easy to compare fleet mix across providers.
+### Plan
 
-### 4. Activity Trends (Optional Future)
-A line chart showing monthly trip counts per operator - useful for spotting trends.
+1. **Rewrite `get_mode_shift_data`** as a single migration to mirror the optimized pattern used by `get_impact_calculation_data`:
+   - Use pre-computed columns: `t.month_key`, `t.bike_type`, `t.dow`, `t.hour_slot`, `t.duration_bucket`, `t.start_lat/lng`, `t.end_lat/lng`
+   - Fix coordinate access for location radius filters (Haversine on `t.start_lat/lng` instead of broken `->>'lng'`)
+   - Collapse the three scans into one CTE that computes filtered totals, surveyed totals, and per-(previous_mode, bike_type) survey counts in a single pass
+   - Keep the same return shape so the frontend needs no changes
 
----
+2. **Verify** by calling the RPC with default filters and confirming sub-second response, then check the Sankey renders on /impacts.
 
-## Technical Approach
+3. **Sanity-check SROI** after the Sankey loads — if numbers still look extreme, investigate whether the new Q1 2026 carpool trips have surveys attached at the expected 10% rate (carpool seeding may have skipped surveys, which would skew extrapolation).
 
-### New Database Function
-Create `get_operator_summary()` RPC function that returns aggregated operator stats in a single query, respecting privacy by only returning aggregates.
+### Files affected
+- New SQL migration: rewrites `public.get_mode_shift_data` (no frontend changes)
 
-```sql
-CREATE FUNCTION get_operator_summary()
-RETURNS TABLE (
-  provider_name text,
-  provider_id uuid,
-  vehicle_types text[],
-  fleet_size bigint,
-  total_trips bigint,
-  incentivized_trips bigint,
-  incentive_earnings numeric,
-  first_trip_date date,
-  last_trip_date date
-)
-```
-
-### New Hook
-Create `useOperatorSummary` hook to fetch and cache operator data using React Query.
-
-### Component Structure
-```text
-OperatorsPage
-+-- OperatorSummaryStats (4 KPI cards)
-+-- OperatorTable (main data table)
-+-- OperatorFleetChart (stacked bar chart)
-```
-
----
-
-## Files to Create/Modify
-
-| File | Action |
-|------|--------|
-| `supabase/migrations/XXXX_add_operator_summary.sql` | Create `get_operator_summary` function |
-| `src/hooks/useOperatorSummary.ts` | New hook for fetching operator data |
-| `src/components/OperatorSummaryStats.tsx` | KPI summary cards component |
-| `src/components/OperatorTable.tsx` | Sortable operator table |
-| `src/components/OperatorFleetChart.tsx` | Vehicle type distribution chart |
-| `src/pages/OperatorsPage.tsx` | Compose all components together |
-
----
-
-## UI Preview
-
-```text
-+-------------------------------------------------------+
-|  Operators                                            |
-|  Manage mobility service providers in your city       |
-+-------------------------------------------------------+
-|  [6]         [198K]       [198,505]     [€236K]      |
-|  Operators   Vehicles     Total Trips   Earnings     |
-+-------------------------------------------------------+
-|                                                       |
-|  Operators Overview                                   |
-|  +---------------------------------------------------+
-|  | Name          | Types      | Fleet | Trips | €    |
-|  +---------------------------------------------------+
-|  | Donkey Rep.   | P,E-Bike   | 87K   | 87K   | €87K |
-|  | NextBike      | P-Bike     | 62K   | 62K   | €62K |
-|  | Lime          | E-Bike     | 25K   | 25K   | €25K |
-|  | Wheeling      | Cargo      | 11K   | 11K   | €28K |
-|  | FamilyBike    | Cargo      | 8K    | 8K    | €19K |
-|  | BlackIronHorse| Cargo      | 6K    | 6K    | €15K |
-|  +---------------------------------------------------+
-|                                                       |
-|  Fleet Composition by Operator                        |
-|  [========= Stacked Bar Chart ==================]    |
-+-------------------------------------------------------+
-```
