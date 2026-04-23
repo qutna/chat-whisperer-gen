@@ -96,7 +96,7 @@ export function useModeShifts(filters: TripFilters) {
       });
       
       // Sort bike types for consistent ordering: Cargo Bike, E-Bike, P-Bike
-      const bikeTypeOrder = ["Cargo Bike", "E-Bike", "P-Bike"];
+      const bikeTypeOrder = ["Cargo Bike", "E-Bike", "P-Bike", "Carpool"];
       const bikeTypes = bikeTypeOrder.filter((bt) => bikeTypesSet.has(bt));
       
       // Build nodes: sorted sources + dynamic target bike types
