@@ -39,31 +39,25 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
           setAvailableIncentives(incentiveData || []);
         }
 
-        // Fetch unique providers using aggregation
+        // Fetch unique providers (fast distinct lookup)
         const { data: providerData, error: providerError } = await supabase
-          .rpc('get_trip_aggregation', {
-            p_dimension: 'provider_name',
-            p_metric: 'count'
-          });
+          .rpc('get_distinct_providers');
 
         if (providerError) {
           console.error('Error fetching providers:', providerError);
         }
 
-        const providers = providerData?.map(d => d.dimension).filter(Boolean).sort() || [];
+        const providers = (providerData || []).map((d: any) => d.provider_name).filter(Boolean);
 
-        // Fetch unique bike types using aggregation
+        // Fetch unique bike types (fast distinct lookup)
         const { data: bikeTypeData, error: bikeTypeError } = await supabase
-          .rpc('get_trip_aggregation', {
-            p_dimension: 'bike_type',
-            p_metric: 'count'
-          });
+          .rpc('get_distinct_bike_types');
 
         if (bikeTypeError) {
           console.error('Error fetching bike types:', bikeTypeError);
         }
 
-        const bikeTypes = bikeTypeData?.map(d => d.dimension).filter(Boolean).sort() || [];
+        const bikeTypes = (bikeTypeData || []).map((d: any) => d.bike_type).filter(Boolean);
 
         console.log('Filter options loaded:', {
           incentives: incentiveData?.length || 0,
