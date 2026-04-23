@@ -1,34 +1,39 @@
 
 
-## Why the Sankey is unavailable & why SROI looks inflated
+## Fix the remaining timeouts (Incentive summary, Graph, Map routes)
 
 ### Root cause
 
-The console shows `get_mode_shift_data` is timing out (`statement timeout`, code 57014). Looking at that function in the database, it was **not** updated in the recent performance migration — unlike `get_impact_calculation_data`, which now uses pre-computed columns (`month_key`, `bike_type`, `dow`, `hour_slot`, `duration_bucket`, `start_lat/lng`, `is_urban_start`).
+After the previous performance migration, three RPCs were left unoptimized and now time out at ~13s on the ~340k-trip dataset:
 
-`get_mode_shift_data` still:
-- Re-derives `bike_type`, month, hour bucket, duration bucket, and DOW from scratch on every row
-- Uses the **wrong duration bucket labels** (`'1-5 min'`, `'5-10 min'`, …) and **wrong time-slot labels** (`'00:00-06:00'`, …) that don't match what the rest of the app uses (`'1-10min'`, `'HH:00'`)
-- Reads coordinates as `start_location->>'lng'` (the GeoJSON format in this project is `coordinates[0]/[1]`, not `lng`/`lat` keys) — broken location filter
-- Runs three near-identical scans of all 340k trips × `trip_surveys` (34k rows) → timeout
+1. **`get_incentive_trip_summary`** — powers the Incentive summary on Trips/Impacts pages
+2. **`get_trip_aggregation`** — powers the Graph view on /trips
+3. **`get_aggregated_routes`** — powers the Map view (~"routes (trips, min 5 per route)")
 
-So the Sankey query never returns, and the UI falls back to "No survey data available."
-
-### Why SROI is 9.41
-SROI = Total Impact ÷ Total Cost. Impact is computed from the **extrapolated** survey sample (34k surveys × 10 = 340k trips), which inflates absolute impact value. Meanwhile cost only counts trips actually linked to incentives. With the new Q1 2026 carpool + bike + cargo seeding, lots of impact is being attributed but the matching cost denominator is correct, so the ratio looks high but is mathematically consistent with the model. We can sanity-check after the Sankey is fixed.
+All three still:
+- Re-derive `bike_type`, `month`, `dow`, `hour_slot`, `duration_bucket` from raw columns on every row
+- Read coordinates via `start_location->'coordinates'->>0` instead of the indexed `start_lat/lng` columns
+- Skip the indexes added in the previous optimization (`month_key`, `bike_type`, `dow`, etc.)
 
 ### Plan
 
-1. **Rewrite `get_mode_shift_data`** as a single migration to mirror the optimized pattern used by `get_impact_calculation_data`:
-   - Use pre-computed columns: `t.month_key`, `t.bike_type`, `t.dow`, `t.hour_slot`, `t.duration_bucket`, `t.start_lat/lng`, `t.end_lat/lng`
-   - Fix coordinate access for location radius filters (Haversine on `t.start_lat/lng` instead of broken `->>'lng'`)
-   - Collapse the three scans into one CTE that computes filtered totals, surveyed totals, and per-(previous_mode, bike_type) survey counts in a single pass
-   - Keep the same return shape so the frontend needs no changes
+**Single SQL migration** that rewrites the three functions to mirror the optimized pattern already used by `get_impact_calculation_data` and `get_filtered_operator_summary`:
 
-2. **Verify** by calling the RPC with default filters and confirming sub-second response, then check the Sankey renders on /impacts.
+1. **`get_incentive_trip_summary`** — switch all filter predicates to pre-computed columns (`t.month_key`, `t.bike_type`, `t.dow`, `t.hour_slot`, `t.duration_bucket`) and Haversine on `t.start_lat/lng` / `t.end_lat/lng`. Same return shape, no frontend changes.
 
-3. **Sanity-check SROI** after the Sankey loads — if numbers still look extreme, investigate whether the new Q1 2026 carpool trips have surveys attached at the expected 10% rate (carpool seeding may have skipped surveys, which would skew extrapolation).
+2. **`get_trip_aggregation`** — same swap inside the dynamic SQL: filter predicates use pre-computed columns; dimension expressions for `bike_type`, `month`, `day_of_week`, `time_of_day`, `duration_bucket` read directly from the cached columns instead of recomputing.
+
+3. **`get_aggregated_routes`** — keep grid math (it has to round actual coords) but switch the bbox + filters to use `t.start_lng/start_lat/end_lng/end_lat` and the cached filter columns. Replaces the most expensive part: the JSONB extracts in `WHERE` and Haversine.
+
+### Verification
+
+After the migration, call each RPC with the default 90-day filter and confirm:
+- Incentive summary returns < 1s
+- Graph view returns < 1s  
+- Map routes returns < 2s (still aggregating per grid cell)
+
+Then refresh /trips and /impacts to confirm Incentive summary, Graph, and Map all load.
 
 ### Files affected
-- New SQL migration: rewrites `public.get_mode_shift_data` (no frontend changes)
+- New SQL migration rewriting the three functions above. No frontend changes.
 
