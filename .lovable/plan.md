@@ -1,39 +1,49 @@
 
 
-## Fix the remaining timeouts (Incentive summary, Graph, Map routes)
+## Why the Sankey only shows P-Bike and E-Bike for Q1 2026
 
-### Root cause
+### What the data shows
 
-After the previous performance migration, three RPCs were left unoptimized and now time out at ~13s on the ~340k-trip dataset:
+Querying Q1 2026 trips by `bike_type`:
 
-1. **`get_incentive_trip_summary`** — powers the Incentive summary on Trips/Impacts pages
-2. **`get_trip_aggregation`** — powers the Graph view on /trips
-3. **`get_aggregated_routes`** — powers the Map view (~"routes (trips, min 5 per route)")
+| bike_type | Jan | Feb | Mar |
+|-----------|-----|-----|-----|
+| E-Bike    | 740 | 577 | 683 |
+| P-Bike    | 30,628 | 27,830 | 30,918 |
+| Cargo Bike | 0 | 0 | 0 |
+| (NULL)    | 6,145 | 5,596 | 6,259 ← carpool |
 
-All three still:
-- Re-derive `bike_type`, `month`, `dow`, `hour_slot`, `duration_bucket` from raw columns on every row
-- Read coordinates via `start_location->'coordinates'->>0` instead of the indexed `start_lat/lng` columns
-- Skip the indexes added in the previous optimization (`month_key`, `bike_type`, `dow`, etc.)
+So there are **two separate problems**:
 
-### Plan
+### Problem 1: No Q1 2026 Cargo Bike trips exist
+The `seed-q1-2026-cargo` edge function was deployed but never produced any rows. Zero cargo bike trips in Jan/Feb/Mar. We need to invoke it (and confirm it actually runs to completion this time).
 
-**Single SQL migration** that rewrites the three functions to mirror the optimized pattern already used by `get_impact_calculation_data` and `get_filtered_operator_summary`:
+### Problem 2: Carpool trips have `bike_type = NULL` and are silently dropped
+~18,000 carpool trips were seeded for Q1 2026, but the `trips_compute_derived` trigger that assigns `bike_type` only knows three categories:
 
-1. **`get_incentive_trip_summary`** — switch all filter predicates to pre-computed columns (`t.month_key`, `t.bike_type`, `t.dow`, `t.hour_slot`, `t.duration_bucket`) and Haversine on `t.start_lat/lng` / `t.end_lat/lng`. Same return shape, no frontend changes.
+```text
+cargo_bike            → 'Cargo Bike'
+electric_assist       → 'E-Bike'
+otherwise             → 'P-Bike'
+```
 
-2. **`get_trip_aggregation`** — same swap inside the dynamic SQL: filter predicates use pre-computed columns; dimension expressions for `bike_type`, `month`, `day_of_week`, `time_of_day`, `duration_bucket` read directly from the cached columns instead of recomputing.
+`vehicle_type = 'carpool'` falls into the "otherwise" branch and would be labeled `'P-Bike'` — except the function actually produced `NULL` for them (likely because `propulsion_types[1]` is non-electric and the else branch was reached, but those rows were inserted before the trigger existed, so they were never recomputed). All Sankey/Impact RPCs `GROUP BY bike_type`, so NULL rows disappear.
 
-3. **`get_aggregated_routes`** — keep grid math (it has to round actual coords) but switch the bbox + filters to use `t.start_lng/start_lat/end_lng/end_lat` and the cached filter columns. Replaces the most expensive part: the JSONB extracts in `WHERE` and Haversine.
+This also means **Carpool is missing from the entire Impacts page**, not just the Sankey: SROI, mode-shift extrapolation, and impact metrics all exclude these 18k Q1 trips.
 
-### Verification
+### Fix plan
 
-After the migration, call each RPC with the default 90-day filter and confirm:
-- Incentive summary returns < 1s
-- Graph view returns < 1s  
-- Map routes returns < 2s (still aggregating per grid cell)
+1. **SQL migration**: extend the `bike_type` logic in both `trips_compute_derived()` and `backfill_trips_derived()` to include a `'Carpool'` category when `vehicle_type = 'carpool'`. Run a one-shot `UPDATE` to backfill `bike_type = 'Carpool'` for the existing ~18k carpool trips (and any other rows currently NULL).
 
-Then refresh /trips and /impacts to confirm Incentive summary, Graph, and Map all load.
+2. **Frontend**: add `'Carpool'` to the Sankey target ordering (`bikeTypeOrder` in `src/hooks/useModeShifts.ts`) so it renders alongside Cargo Bike / E-Bike / P-Bike. Also add it to the vehicle-type filter label list (`src/types/tripFilters.ts` if applicable).
+
+3. **Re-invoke `seed-q1-2026-cargo`** to actually create the 35k Q1 cargo trips that were intended.
+
+4. **Verify** on /impacts that Sankey now shows four target nodes (Cargo Bike, E-Bike, P-Bike, Carpool) for the default 90-day window, and that SROI recomputes with the new denominator.
 
 ### Files affected
-- New SQL migration rewriting the three functions above. No frontend changes.
+- New SQL migration (update trigger function + backfill bike_type for carpool/null rows)
+- `src/hooks/useModeShifts.ts` (add Carpool to bikeTypeOrder)
+- Possibly `src/types/tripFilters.ts` and any vehicle-type label maps
+- Re-invoke `seed-q1-2026-cargo` edge function (no code change)
 
