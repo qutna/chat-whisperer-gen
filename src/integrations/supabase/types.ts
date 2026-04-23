@@ -384,6 +384,18 @@ export type Database = {
           trip_count: number
         }[]
       }
+      get_distinct_bike_types: {
+        Args: never
+        Returns: {
+          bike_type: string
+        }[]
+      }
+      get_distinct_providers: {
+        Args: never
+        Returns: {
+          provider_name: string
+        }[]
+      }
       get_filtered_operator_summary: {
         Args: {
           p_end_lat?: number
